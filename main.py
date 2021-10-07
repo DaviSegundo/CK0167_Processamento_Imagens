@@ -79,6 +79,12 @@ def apply():
     scl_gama.set(100)
     box_negative.deselect()
 
+
+"""
+Função para alterar a imagem em tempo real na tela auxilar
+"""
+
+
 def test(*args):
     # pega os valores informados nos scalers
     brightness = scl_brigh.get()/100
@@ -100,7 +106,7 @@ def test(*args):
 # janela principal do programa
 root = Tk()
 root.title('GUI PDI')
-root.geometry('700x1000')
+root.geometry('650x900')
 root.configure()
 
 frm = Frame(root)
