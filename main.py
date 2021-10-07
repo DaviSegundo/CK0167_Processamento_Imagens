@@ -17,6 +17,7 @@ def select_image():
     global img_s
     global window
     global lbl_img
+    global lbl_hist
 
     # sistema de navegação de arquivos
     fln = filedialog.askopenfilename(initialdir=os.getcwd(
@@ -24,6 +25,17 @@ def select_image():
     img = Img(fln)
     size = img.size()
     img_s = ImageTk.PhotoImage(Image.open(fln))
+
+    # plot inicial do histograma
+    frm6 = Frame(root)
+    frm6.pack(side=TOP, padx=15, pady=15)
+    lbl_hist = Label(frm6)
+    lbl_hist.pack(side=tk.TOP)
+
+    hist_plot = img.histogram_plot()
+    img_hist_plot = ImageTk.PhotoImage(hist_plot)
+    lbl_hist.configure(image=img_hist_plot)
+    lbl_hist.image = img_hist_plot
 
     # criação de uma nova janela para mostrar a imagem
     window = Toplevel(root)
@@ -57,16 +69,38 @@ def apply():
     lbl_img.configure(image=img_s)
     lbl_img.image = img_s
 
+    hist_plot = img.histogram_plot()
+    img_hist_plot = ImageTk.PhotoImage(hist_plot)
+    lbl_hist.configure(image=img_hist_plot)
+    lbl_hist.image = img_hist_plot
+
     # volta para configurações iniciais
     scl_brigh.set(100)
     scl_gama.set(100)
     box_negative.deselect()
 
+def test(*args):
+    # pega os valores informados nos scalers
+    brightness = scl_brigh.get()/100
+    gama = scl_gama.get()/100
+
+    # realiza as transformações nas imagens de acordo com os valores
+    img_test = img.brightness_test(img.img_now, brightness)
+    img_test = img.gama_test(img_test, gama)
+    if check_neg.get() == 1:
+        img_test = img.negative_image_test(img_test)
+
+    img_test = img.convert(img_test)
+
+    # atualiza a imagem na tela auxiliar
+    img_s = ImageTk.PhotoImage(img_test)
+    lbl_img.configure(image=img_s)
+    lbl_img.image = img_s
 
 # janela principal do programa
 root = Tk()
 root.title('GUI PDI')
-root.geometry('500x800')
+root.geometry('700x1000')
 root.configure()
 
 frm = Frame(root)
@@ -93,7 +127,7 @@ frm3 = Frame(root)
 frm3.pack(side=BOTTOM, padx=15, pady=15)
 lbl_brightness = Label(frm3, text='Brightness')
 lbl_brightness.pack(side=tk.TOP)
-scl_brigh = Scale(frm3, from_=0, to=300, orient=HORIZONTAL, length=400)
+scl_brigh = Scale(frm3, from_=0, to=300, orient=HORIZONTAL, length=400, command=test)
 scl_brigh.set(100)
 scl_brigh.pack(side=tk.BOTTOM, padx=10)
 
@@ -102,7 +136,7 @@ frm4 = Frame(root)
 frm4.pack(side=BOTTOM, padx=15, pady=15)
 lbl_gama = Label(frm4, text='Gama')
 lbl_gama.pack(side=tk.TOP)
-scl_gama = Scale(frm4, from_=0, to=300, orient=HORIZONTAL, length=400)
+scl_gama = Scale(frm4, from_=0, to=300, orient=HORIZONTAL, length=400, command=test)
 scl_gama.set(100)
 scl_gama.pack(side=tk.BOTTOM, padx=10)
 
@@ -110,7 +144,7 @@ scl_gama.pack(side=tk.BOTTOM, padx=10)
 frm5 = Frame(root)
 frm5.pack(side=BOTTOM, padx=15, pady=15)
 check_neg = IntVar()
-box_negative = Checkbutton(frm5, text="Negative Image", variable=check_neg)
+box_negative = Checkbutton(frm5, text="Negative Image", variable=check_neg, command=test)
 box_negative.pack(side=tk.TOP)
 
 
