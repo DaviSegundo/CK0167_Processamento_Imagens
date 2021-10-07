@@ -63,6 +63,8 @@ def apply():
     img_now = img.gama_apply(gama)
     if check_neg.get() == 1:
         img_now = img.negative_image()
+    if check_log.get() == 1:
+        img_now = img.log_apply()
 
     # atualiza a imagem na tela auxiliar
     img_s = ImageTk.PhotoImage(img_now)
@@ -78,6 +80,7 @@ def apply():
     scl_brigh.set(100)
     scl_gama.set(100)
     box_negative.deselect()
+    box_log.deselect()
 
 
 """
@@ -95,6 +98,8 @@ def test(*args):
     img_test = img.gama_test(img_test, gama)
     if check_neg.get() == 1:
         img_test = img.negative_image_test(img_test)
+    if check_log.get() == 1:
+        img_test = img.log_test(img_test)
 
     img_test = img.convert(img_test)
 
@@ -102,6 +107,7 @@ def test(*args):
     img_s = ImageTk.PhotoImage(img_test)
     lbl_img.configure(image=img_s)
     lbl_img.image = img_s
+
 
 # janela principal do programa
 root = Tk()
@@ -133,7 +139,8 @@ frm3 = Frame(root)
 frm3.pack(side=BOTTOM, padx=15, pady=15)
 lbl_brightness = Label(frm3, text='Brightness')
 lbl_brightness.pack(side=tk.TOP)
-scl_brigh = Scale(frm3, from_=0, to=300, orient=HORIZONTAL, length=400, command=test)
+scl_brigh = Scale(frm3, from_=0, to=300, orient=HORIZONTAL,
+                  length=400, command=test)
 scl_brigh.set(100)
 scl_brigh.pack(side=tk.BOTTOM, padx=10)
 
@@ -142,7 +149,8 @@ frm4 = Frame(root)
 frm4.pack(side=BOTTOM, padx=15, pady=15)
 lbl_gama = Label(frm4, text='Gama')
 lbl_gama.pack(side=tk.TOP)
-scl_gama = Scale(frm4, from_=0, to=300, orient=HORIZONTAL, length=400, command=test)
+scl_gama = Scale(frm4, from_=0, to=300, orient=HORIZONTAL,
+                 length=400, command=test)
 scl_gama.set(100)
 scl_gama.pack(side=tk.BOTTOM, padx=10)
 
@@ -150,8 +158,13 @@ scl_gama.pack(side=tk.BOTTOM, padx=10)
 frm5 = Frame(root)
 frm5.pack(side=BOTTOM, padx=15, pady=15)
 check_neg = IntVar()
-box_negative = Checkbutton(frm5, text="Negative Image", variable=check_neg, command=test)
-box_negative.pack(side=tk.TOP)
+box_negative = Checkbutton(frm5, text="Negative Image",
+                           variable=check_neg, command=test)
+box_negative.pack(side=tk.LEFT)
+
+check_log = IntVar()
+box_log = Checkbutton(frm5, text="Log2", variable=check_log, command=test)
+box_log.pack(side=tk.RIGHT)
 
 
 root.mainloop()

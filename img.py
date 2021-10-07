@@ -55,6 +55,14 @@ class Img():
         self.return_img = temp_img
         return self.return_img
 
+    def log_test(self, array):
+        temp_img = array/255
+        temp_img = np.log2(1 + temp_img)
+        temp_img = np.clip(temp_img, 0, 1)
+        temp_img = (temp_img * 255).astype(np.uint8)
+        self.return_img = temp_img
+        return self.return_img
+
     def convert(self, array):
         return Image.fromarray(array)
 
@@ -78,6 +86,14 @@ class Img():
     def gama_apply(self, num):
         temp_img = self.img_now/255
         temp_img = temp_img**num
+        temp_img = np.clip(temp_img, 0, 1)
+        temp_img = (temp_img * 255).astype(np.uint8)
+        self.img_now = temp_img
+        return Image.fromarray(self.img_now)
+
+    def log_apply(self):
+        temp_img = self.img_now/255
+        temp_img = np.log2(1+temp_img)
         temp_img = np.clip(temp_img, 0, 1)
         temp_img = (temp_img * 255).astype(np.uint8)
         self.img_now = temp_img
