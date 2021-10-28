@@ -34,3 +34,53 @@ def plot_linear_parts(points_x, points_y):
     plt.savefig(strfile, dpi=100)
     plt.close()
     return Image.open(strfile)
+
+def generate_mean_simple_kernel(size):
+    kernel = []
+    for i in range(size):
+        aux = []
+        for j in range(size):
+            aux.append(1)
+        kernel.append(aux)
+    kernel = np.array(kernel)
+    kernel = kernel/(size**2)
+    return kernel
+
+def generate_mean_weighted_kernel(size):
+    init = 1
+    vals = []
+
+    for i in range(size):
+        if i == 0:
+            vals.append(init)
+        else:
+            vals.append(init*2)
+            init += 1
+
+    kernel = []
+    slide = (size//2)+1
+    term = size//2
+
+    var_aux = 0
+    for i in range(slide):
+        aux = []
+        if i <= term:
+            itens = vals[var_aux:slide+var_aux]
+            var_aux += 1
+        inv_itens = itens.copy()
+        inv_itens.reverse()
+        inv_itens.pop(0)
+        itens.extend(inv_itens)
+        kernel.append(itens)
+    
+    for i in range(term, 0, -1):
+        kernel.append(kernel[i-1])
+
+    pon = 0
+    for k in kernel:
+        pon += sum(k)
+
+    kernel = np.array(kernel)
+    kernel = kernel/pon
+
+    return kernel
