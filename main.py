@@ -1,4 +1,5 @@
 import os
+import sys
 import tkinter as tk
 from tkinter import *
 from tkinter import filedialog
@@ -48,6 +49,32 @@ def select_image():
     lbl_img.pack()
     lbl_img.configure(image=img_s)
     lbl_img.image = img_s
+
+    # representação em bytes da imagem
+    # img_byte_arr = img.img_to_array()
+
+    # img_byte_arr = img_now
+
+    # bytes_existentes = 0
+    # for i, j in enumerate(img_byte_arr):
+    #     bytes_existentes = i
+    #     print(i, "->", j)
+    
+    # tbe_text = str(input("Digite o texto a ser encodado: "))
+    # int_text = int.from_bytes(tbe_text.encode('utf-8'), byteorder=sys.byteorder)
+    # bin_text = bin(int_text)
+
+    # bytes_necessarios = int_text/16
+
+    # print("Texto original: ", tbe_text)
+    # print("Texto encodado em int: ", int_text)
+    # print("Texto encodado em binario: ", bin_text)
+    # print("Quantidade de bytes necessários para acomodar texto: ", bytes_necessarios)
+    # print("Quantidade de bytes existentes: ", bytes_existentes)
+    # if(bytes_existentes >= bytes_necessarios):
+    #     print("Sim é possível")
+    # else:
+    #     print("Não é possível")
 
 
 """
@@ -174,6 +201,13 @@ def show_linear():
     lbl_img_curve.configure(image=img_curve)
     lbl_img_curve.image = img_curve
 
+def realizar_estegnografia():
+    global img_encrypted
+    img_encrypted = img.encrypt(entry_esteg.get())
+
+def decodificar_estegnografia():
+    frase_entrada.configure(text=f'O texto decodificado é: {img.decrypt(img_encrypted)}')
+
 
 # janela principal do programa
 root = Tk()
@@ -295,6 +329,24 @@ btn_plot.pack(side=tk.LEFT, padx=10)
 check_lp = IntVar()
 box_lp = Checkbutton(frm7, text="Linear Parts Apply", variable=check_lp, command=test) # depois testar com command=test
 box_lp.pack(side=tk.BOTTOM)
+
+frm8 = Frame(root)
+frm8.pack(side=BOTTOM, padx=15, pady=5)
+btn_esteg = Button(frm8, text="Decodificar Esteganografia", command=decodificar_estegnografia)
+btn_esteg.pack(side=tk.TOP, padx=10)
+frase_entrada = Label(frm8, text='')
+frase_entrada.pack(side=tk.BOTTOM)
+
+frm9 = Frame(root)
+frm9.pack(side=BOTTOM, padx=15, pady=5)
+lbl_esteg = Label(frm9, text='Esteganografia')
+lbl_esteg.pack(side=tk.TOP)
+lbl_esteg = Label(frm9, text='Entre uma frase: ')
+lbl_esteg.pack(side=tk.LEFT)
+entry_esteg = Entry(frm9)
+entry_esteg.pack(side=tk.LEFT)
+btn_esteg = Button(frm9, text="Gerar Esteganografia", command=realizar_estegnografia)
+btn_esteg.pack(side=tk.LEFT, padx=10)
 
 
 root.mainloop()
