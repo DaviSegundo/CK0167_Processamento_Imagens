@@ -50,32 +50,6 @@ def select_image():
     lbl_img.configure(image=img_s)
     lbl_img.image = img_s
 
-    # representação em bytes da imagem
-    # img_byte_arr = img.img_to_array()
-
-    # img_byte_arr = img_now
-
-    # bytes_existentes = 0
-    # for i, j in enumerate(img_byte_arr):
-    #     bytes_existentes = i
-    #     print(i, "->", j)
-    
-    # tbe_text = str(input("Digite o texto a ser encodado: "))
-    # int_text = int.from_bytes(tbe_text.encode('utf-8'), byteorder=sys.byteorder)
-    # bin_text = bin(int_text)
-
-    # bytes_necessarios = int_text/16
-
-    # print("Texto original: ", tbe_text)
-    # print("Texto encodado em int: ", int_text)
-    # print("Texto encodado em binario: ", bin_text)
-    # print("Quantidade de bytes necessários para acomodar texto: ", bytes_necessarios)
-    # print("Quantidade de bytes existentes: ", bytes_existentes)
-    # if(bytes_existentes >= bytes_necessarios):
-    #     print("Sim é possível")
-    # else:
-    #     print("Não é possível")
-
 
 """
 Função que aplica as mundaças que foram selecionadas na interface principal
