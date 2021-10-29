@@ -105,21 +105,33 @@ class Img():
         print('linear test')
         return self.return_img
 
-    def edge_detection_filter_test(self, array):
-        edge_detection = np.array([[1,1,1], 
-                                   [1,-8.5,1], 
-                                   [1,1,1]])
+    def laplacian_filter_test(self, array):
+        laplacian = np.array([[0,1,0], 
+                              [1,-4,1], 
+                              [0,1,0]])
         temp_img = array
-        temp_img = convolve2d(abs(temp_img), edge_detection)
-        temp_img = np.clip(temp_img, 0, 255)
+        temp_img = convolve2d(abs(temp_img), laplacian)
+        temp_img = fc.normalize_img(temp_img)
         self.return_img = temp_img
+        return self.return_img
+
+    def high_boost_filter_test(self, array):
+        gaussian = np.array([[1,2,1],
+                             [2,8,2],
+                             [1,2,1]])
+        temp_img = array
+        ipg = convolve2d(abs(temp_img), gaussian)
+        ipg = ipg[0:600, 0:490]
+        ib = temp_img - ipg
+        ibn = fc.normalize_img(ib)
+        self.return_img = ibn*1.5
         return self.return_img
 
     def mean_simple_filter_test(self, array, size):
         kernel = fc.generate_mean_simple_kernel(size)
         temp_img = array
         temp_img = convolve2d(abs(temp_img), kernel)
-        temp_img = np.clip(temp_img, 0, 255)
+        temp_img = fc.normalize_img(temp_img)
         self.return_img = temp_img
         return self.return_img
 
@@ -127,7 +139,7 @@ class Img():
         kernel = fc.generate_mean_weighted_kernel(size)
         temp_img = array
         temp_img = convolve2d(abs(temp_img), kernel)
-        temp_img = np.clip(temp_img, 0, 255)
+        temp_img = fc.normalize_img(temp_img)
         self.return_img = temp_img
         return self.return_img
 
@@ -212,21 +224,34 @@ class Img():
         self.img_now = temp_img
         return Image.fromarray(self.img_now)
 
-    def edge_detection_filter_apply(self):
-        edge_detection = np.array([[1,1,1], 
-                                   [1,-8.5,1], 
-                                   [1,1,1]])
+
+    def laplacian_filter_apply(self):
+        laplacian = np.array([[0,1,0], 
+                              [1,-4,1], 
+                              [0,1,0]])
         temp_img = self.img_now
-        temp_img = convolve2d(abs(temp_img), edge_detection)
-        temp_img = np.clip(temp_img, 0, 255)
-        self.img_now = temp_img
+        temp_img = convolve2d(abs(temp_img), laplacian)
+        print(self.img_now.shape, temp_img.shape)
+        k = temp_img[0:600, 0:490]
+        print(k.shape)
+        self.img_now = self.img_now + (0.3*k)
         return Image.fromarray(self.img_now)
+
+    def high_boost_filter_apply(self):
+        gaussian = np.array([[1,2,1],
+                             [2,8,2],
+                             [1,2,1]])
+        temp_img = self.img_now
+        ipg = convolve2d(abs(temp_img), gaussian)
+        ib = temp_img - ipg
+        ibn = fc.normalize_img(ib)
+        self.return_img = ibn*1.5
+        return self.return_img
 
     def mean_simple_filter_apply(self, size):
         kernel = fc.generate_mean_simple_kernel(size)
         temp_img = self.img_now
         temp_img = convolve2d(abs(temp_img), kernel)
-        temp_img = np.clip(temp_img, 0, 255)
         self.img_now = temp_img
         return Image.fromarray(self.img_now)
 
@@ -234,7 +259,6 @@ class Img():
         kernel = fc.generate_mean_weighted_kernel(size)
         temp_img = self.img_now
         temp_img = convolve2d(abs(temp_img), kernel)
-        temp_img = np.clip(temp_img, 0, 255)
         self.img_now = temp_img
         return Image.fromarray(self.img_now)
 
@@ -247,17 +271,27 @@ class Img():
 
 
 if __name__ == "__main__":
-    edge_detection = np.array([[1,1,1], [1,-8.5,1], [1,1,1]])
-    h_sobel = np.array([[1, 2, 1], [0, 0, 0], [-1, -2, -1]])
-    v_sobel = np.array([[1, 0, -1], [2, 0, -2], [1, 0, -1]])
+    laplacian = np.array([[1,1,1], [1,-8.5,1], [1,1,1]])
+    # h_sobel = np.array([[1, 2, 1], [0, 0, 0], [-1, -2, -1]])
+    # v_sobel = np.array([[1, 0, -1], [2, 0, -2], [1, 0, -1]])
+    from sklearn.preprocessing import normalize
 
-    img = Image.open('../../Downloads/Imagens_PDI/DIP3E_Original_Images_CH03/Fig0335(a)(ckt_board_saltpep_prob_pt05).tif')
+    img = Image.open('../../Downloads/Imagens_PDI/DIP3E_Original_Images_CH03/Fig0354(a)(einstein_orig).tif')
     img.show()
 
-    img_median_3 = img.filter(ImageFilter.MedianFilter(3))
-    img_median_3.show()
-    print(type(img_median_3))
+    array = np.array(img)
+    print(array)
 
-    img_median_7 = img.filter(ImageFilter.MedianFilter(7))
-    img_median_7.show()
+    temp_img = convolve2d(array, laplacian)
+    print(temp_img)
+
+    norm_img = np.interp(temp_img, (temp_img.min(), temp_img.max()), (0, 1))
+    print(norm_img)
+
+    norm_img = norm_img*255
+    norm_img = Image.fromarray(norm_img)
+    norm_img.show()
+
+    
+
 

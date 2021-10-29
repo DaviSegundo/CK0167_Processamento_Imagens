@@ -84,3 +84,8 @@ def generate_mean_weighted_kernel(size):
     kernel = kernel/pon
 
     return kernel
+
+def normalize_img(array):
+    norm = np.interp(array, (array.min(), array.max()), (0, 1))
+    norm = norm*255
+    return norm

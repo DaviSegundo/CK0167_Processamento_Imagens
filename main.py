@@ -69,8 +69,8 @@ def apply():
         img_now = img.log_apply()
     if check_equal.get() == 1:
         img_now = img.equalize_hist()
-    if check_filter_edge.get() == 1:
-        img_now = img.edge_detection_filter_apply()
+    if check_filter_laplacian.get() == 1:
+        img_now = img.laplacian_filter_apply()
     if check_filter_mean_simple.get() == 1:
         size = option_kernel_size.get()
         img_now = img.mean_simple_filter_apply(size)
@@ -107,7 +107,7 @@ def apply():
     box_log.deselect()
     box_equal_hits.deselect()
     box_lp.deselect()
-    box_edge_detection.deselect()
+    box_laplacian.deselect()
     box_mean_simple.deselect()
     box_mean_weighted.deselect()
     box_median.deselect()
@@ -132,8 +132,8 @@ def test(*args):
         img_test = img.log_test(img_test)
     if check_equal.get() == 1:
         img_test = img.equalize_hist_test(img_test)
-    if check_filter_edge.get() == 1:
-        img_test = img.edge_detection_filter_test(img_test)
+    if check_filter_laplacian.get() == 1:
+        img_test = img.laplacian_filter_test(img_test)
     if check_filter_mean_simple.get() == 1:
         size = option_kernel_size.get()
         img_test = img.mean_simple_filter_test(img_test, size)
@@ -143,6 +143,8 @@ def test(*args):
     if check_filter_median.get() == 1:
         size = option_kernel_size.get()
         img_test = img.median_filter_test(img_test, size)
+    if check_filter_high_boost.get() == 1:
+        img_test = img.high_boost_filter_test(img_test)
 
     if len(input_x.get()) > 0 and check_lp.get() == 1:
         points_x = input_x.get()
@@ -190,14 +192,18 @@ lbl_img_curve.pack()
 
 filter = Toplevel(root)
 filter.title("Extra")
-filter.geometry('640x480')
+filter.geometry('640x200')
 filter.configure()
 
 frm_filter = Frame(filter)
 frm_filter.pack(side=BOTTOM, padx=15, pady=5)
-check_filter_edge = IntVar()
-box_edge_detection = Checkbutton(frm_filter, text="Edge Detection", variable=check_filter_edge, command=test)
-box_edge_detection.pack(side=tk.BOTTOM)
+check_filter_laplacian = IntVar()
+box_laplacian = Checkbutton(frm_filter, text="Laplacian", variable=check_filter_laplacian, command=test)
+box_laplacian.pack(side=tk.BOTTOM)
+
+check_filter_high_boost = IntVar()
+box_high_boost = Checkbutton(frm_filter, text="High Boost", variable=check_filter_high_boost, command=test)
+box_high_boost.pack(side=tk.BOTTOM)
 
 lbl_kernel = Label(frm_filter, text="Kernel Size: ")
 lbl_kernel.pack(side=tk.LEFT)
