@@ -121,10 +121,10 @@ class Img():
                              [1,2,1]])
         temp_img = array
         ipg = convolve2d(abs(temp_img), gaussian)
-        ipg = ipg[0:600, 0:490]
+        shp = ipg.shape
+        ipg = ipg[0:shp[0]-2, 0:shp[1]-2]
         ib = temp_img - ipg
-        ibn = fc.normalize_img(ib)
-        self.return_img = ibn*1.5
+        self.return_img = (ib*15)
         return self.return_img
 
     def mean_simple_filter_test(self, array, size):
@@ -231,9 +231,8 @@ class Img():
                               [0,1,0]])
         temp_img = self.img_now
         temp_img = convolve2d(abs(temp_img), laplacian)
-        print(self.img_now.shape, temp_img.shape)
-        k = temp_img[0:600, 0:490]
-        print(k.shape)
+        shp = self.img_now.shape
+        k = temp_img[0:shp[0], 0:shp[1]]
         self.img_now = self.img_now + (0.3*k)
         return Image.fromarray(self.img_now)
 
