@@ -317,8 +317,7 @@ class Img():
             width_parser = 0
         # Step 6
         # Write the encrypted image into a new file
-        cv2.imshow("encrypted image", img)
-        cv2.imwrite("encrypted_image.png", img)
+        cv2.imwrite("media/encrypted_image.png", img)
         return img
     
     def decrypt(self, img):
