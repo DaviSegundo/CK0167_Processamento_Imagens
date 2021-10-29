@@ -96,6 +96,17 @@ def apply():
         img_now = img.log_apply()
     if check_equal.get() == 1:
         img_now = img.equalize_hist()
+    if check_filter_edge.get() == 1:
+        img_now = img.edge_detection_filter_apply()
+    if check_filter_mean_simple.get() == 1:
+        size = option_kernel_size.get()
+        img_now = img.mean_simple_filter_apply(size)
+    if check_filter_mean_weighted.get() == 1:
+        size = option_kernel_size.get()
+        img_now = img.mean_weighted_filter_apply(size)
+    if check_filter_median.get() == 1:
+        size = option_kernel_size.get()
+        img_now = img.median_filter_apply(size)
     
     if len(input_x.get()) > 0 and check_lp.get() == 1:
         points_x = input_x.get()
@@ -123,6 +134,10 @@ def apply():
     box_log.deselect()
     box_equal_hits.deselect()
     box_lp.deselect()
+    box_edge_detection.deselect()
+    box_mean_simple.deselect()
+    box_mean_weighted.deselect()
+    box_median.deselect()
 
 
 """
@@ -144,6 +159,17 @@ def test(*args):
         img_test = img.log_test(img_test)
     if check_equal.get() == 1:
         img_test = img.equalize_hist_test(img_test)
+    if check_filter_edge.get() == 1:
+        img_test = img.edge_detection_filter_test(img_test)
+    if check_filter_mean_simple.get() == 1:
+        size = option_kernel_size.get()
+        img_test = img.mean_simple_filter_test(img_test, size)
+    if check_filter_mean_weighted.get() == 1:
+        size = option_kernel_size.get()
+        img_test = img.mean_weighted_filter_test(img_test, size)
+    if check_filter_median.get() == 1:
+        size = option_kernel_size.get()
+        img_test = img.median_filter_test(img_test, size)
 
     if len(input_x.get()) > 0 and check_lp.get() == 1:
         points_x = input_x.get()
@@ -196,6 +222,41 @@ curve.configure()
 lbl_img_curve = Label(curve, text='Insert Values on Points X & Y and Press "See Plot"')
 lbl_img_curve.pack()
 
+filter = Toplevel(root)
+filter.title("Extra")
+filter.geometry('640x480')
+filter.configure()
+
+frm_filter = Frame(filter)
+frm_filter.pack(side=BOTTOM, padx=15, pady=5)
+check_filter_edge = IntVar()
+box_edge_detection = Checkbutton(frm_filter, text="Edge Detection", variable=check_filter_edge, command=test)
+box_edge_detection.pack(side=tk.BOTTOM)
+
+lbl_kernel = Label(frm_filter, text="Kernel Size: ")
+lbl_kernel.pack(side=tk.LEFT)
+OPTIONS = [3, 5, 7, 9, 11, 13, 15]
+option_kernel_size = IntVar()
+option_kernel_size.set(OPTIONS[0])
+option_menu = OptionMenu(frm_filter, option_kernel_size, *OPTIONS, command=test)
+option_menu.pack(side=tk.LEFT)
+
+check_filter_mean_simple = IntVar()
+box_mean_simple = Checkbutton(frm_filter, text="Mean Simple Filter", variable=check_filter_mean_simple, command=test)
+box_mean_simple.pack(side=tk.RIGHT)
+
+check_filter_mean_weighted = IntVar()
+box_mean_weighted = Checkbutton(frm_filter, text="Mean Simple Weighted Filter", variable=check_filter_mean_weighted, command=test)
+box_mean_weighted.pack(side=tk.RIGHT)
+
+check_filter_median = IntVar()
+box_median = Checkbutton(frm_filter, text="Median Filter", variable=check_filter_median, command=test)
+box_median.pack(side=tk.RIGHT)
+
+
+"""
+Tela Principal
+"""
 frm = Frame(root)
 frm.pack(side=BOTTOM, padx=15, pady=15)
 
