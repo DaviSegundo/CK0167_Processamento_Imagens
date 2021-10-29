@@ -175,8 +175,12 @@ def show_linear():
     lbl_img_curve.configure(image=img_curve)
     lbl_img_curve.image = img_curve
 
-def estegnografia():
-    Img.decrypt(Img.encrypt(entry_esteg.get(), img))
+def realizar_estegnografia():
+    global img_encrypted
+    img_encrypted = img.encrypt(entry_esteg.get())
+
+def decodificar_estegnografia():
+    frase_entrada.configure(text=f'O texto decodificado é: {img.decrypt(img_encrypted)}')
 
 
 # janela principal do programa
@@ -267,15 +271,21 @@ box_lp.pack(side=tk.BOTTOM)
 
 frm8 = Frame(root)
 frm8.pack(side=BOTTOM, padx=15, pady=5)
-lbl_esteg = Label(frm8, text='Esteganografia')
-lbl_esteg.pack(side=tk.TOP)
-lbl_esteg = Label(frm8, text='Entre uma frase: ')
-lbl_esteg.pack(side=tk.LEFT)
-entry_esteg = Entry(frm8)
-entry_esteg.pack(side=tk.LEFT)
-btn_esteg = Button(frm8, text="Gerar Esteganografia", command=estegnografia)
-btn_esteg.pack(side=tk.LEFT, padx=10)
-frase_entrada = Label(frm8, text='---')
+btn_esteg = Button(frm8, text="Decodificar Esteganografia", command=decodificar_estegnografia)
+btn_esteg.pack(side=tk.TOP, padx=10)
+frase_entrada = Label(frm8, text='')
 frase_entrada.pack(side=tk.BOTTOM)
+
+frm9 = Frame(root)
+frm9.pack(side=BOTTOM, padx=15, pady=5)
+lbl_esteg = Label(frm9, text='Esteganografia')
+lbl_esteg.pack(side=tk.TOP)
+lbl_esteg = Label(frm9, text='Entre uma frase: ')
+lbl_esteg.pack(side=tk.LEFT)
+entry_esteg = Entry(frm9)
+entry_esteg.pack(side=tk.LEFT)
+btn_esteg = Button(frm9, text="Gerar Esteganografia", command=realizar_estegnografia)
+btn_esteg.pack(side=tk.LEFT, padx=10)
+
 
 root.mainloop()
