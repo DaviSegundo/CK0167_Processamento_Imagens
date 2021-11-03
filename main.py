@@ -72,6 +72,8 @@ def apply():
         img_now = img.equalize_hist()
     if check_filter_laplacian.get() == 1:
         img_now = img.laplacian_filter_apply()
+    if check_filter_high_boost.get() == 1:
+        img_now = img.high_boost_filter_apply()
     if check_filter_mean_simple.get() == 1:
         size = option_kernel_size.get()
         img_now = img.mean_simple_filter_apply(size)
@@ -81,11 +83,11 @@ def apply():
     if check_filter_median.get() == 1:
         size = option_kernel_size.get()
         img_now = img.median_filter_apply(size)
-    
+
     if len(input_x.get()) > 0 and check_lp.get() == 1:
         points_x = input_x.get()
         points_y = input_y.get()
-    
+
         points_x = fc.transform_points(points_x)
         points_y = fc.transform_points(points_y)
 
@@ -112,6 +114,7 @@ def apply():
     box_mean_simple.deselect()
     box_mean_weighted.deselect()
     box_median.deselect()
+    box_high_boost.deselect()
 
 
 """
@@ -150,7 +153,7 @@ def test(*args):
     if len(input_x.get()) > 0 and check_lp.get() == 1:
         points_x = input_x.get()
         points_y = input_y.get()
-    
+
         points_x = fc.transform_points(points_x)
         points_y = fc.transform_points(points_y)
 
@@ -167,7 +170,7 @@ def test(*args):
 def show_linear():
     points_x = input_x.get()
     points_y = input_y.get()
-    
+
     points_x = fc.transform_points(points_x)
     points_y = fc.transform_points(points_y)
 
@@ -177,12 +180,15 @@ def show_linear():
     lbl_img_curve.configure(image=img_curve)
     lbl_img_curve.image = img_curve
 
+
 def realizar_estegnografia():
     global img_encrypted
     img_encrypted = img.encrypt(entry_esteg.get())
 
+
 def decodificar_estegnografia():
-    frase_entrada.configure(text=f'O texto decodificado é: {img.decrypt(img_encrypted)}')
+    frase_entrada.configure(
+        text=f'O texto decodificado é: {img.decrypt(img_encrypted)}')
 
 
 # janela principal do programa
@@ -195,7 +201,8 @@ curve = Toplevel(root)
 curve.title("LP Plot")
 curve.geometry('640x480')
 curve.configure()
-lbl_img_curve = Label(curve, text='Insert Values on Points X & Y and Press "See Plot"')
+lbl_img_curve = Label(
+    curve, text='Insert Values on Points X & Y and Press "See Plot"')
 lbl_img_curve.pack()
 
 filter = Toplevel(root)
@@ -206,11 +213,13 @@ filter.configure()
 frm_filter = Frame(filter)
 frm_filter.pack(side=BOTTOM, padx=15, pady=5)
 check_filter_laplacian = IntVar()
-box_laplacian = Checkbutton(frm_filter, text="Laplacian", variable=check_filter_laplacian, command=test)
+box_laplacian = Checkbutton(
+    frm_filter, text="Laplacian", variable=check_filter_laplacian, command=test)
 box_laplacian.pack(side=tk.BOTTOM)
 
 check_filter_high_boost = IntVar()
-box_high_boost = Checkbutton(frm_filter, text="High Boost", variable=check_filter_high_boost, command=test)
+box_high_boost = Checkbutton(
+    frm_filter, text="High Boost", variable=check_filter_high_boost, command=test)
 box_high_boost.pack(side=tk.BOTTOM)
 
 lbl_kernel = Label(frm_filter, text="Kernel Size: ")
@@ -218,19 +227,23 @@ lbl_kernel.pack(side=tk.LEFT)
 OPTIONS = [3, 5, 7, 9, 11, 13, 15]
 option_kernel_size = IntVar()
 option_kernel_size.set(OPTIONS[0])
-option_menu = OptionMenu(frm_filter, option_kernel_size, *OPTIONS, command=test)
+option_menu = OptionMenu(
+    frm_filter, option_kernel_size, *OPTIONS, command=test)
 option_menu.pack(side=tk.LEFT)
 
 check_filter_mean_simple = IntVar()
-box_mean_simple = Checkbutton(frm_filter, text="Mean Simple Filter", variable=check_filter_mean_simple, command=test)
+box_mean_simple = Checkbutton(
+    frm_filter, text="Mean Simple Filter", variable=check_filter_mean_simple, command=test)
 box_mean_simple.pack(side=tk.RIGHT)
 
 check_filter_mean_weighted = IntVar()
-box_mean_weighted = Checkbutton(frm_filter, text="Mean Simple Weighted Filter", variable=check_filter_mean_weighted, command=test)
+box_mean_weighted = Checkbutton(
+    frm_filter, text="Mean Simple Weighted Filter", variable=check_filter_mean_weighted, command=test)
 box_mean_weighted.pack(side=tk.RIGHT)
 
 check_filter_median = IntVar()
-box_median = Checkbutton(frm_filter, text="Median Filter", variable=check_filter_median, command=test)
+box_median = Checkbutton(frm_filter, text="Median Filter",
+                         variable=check_filter_median, command=test)
 box_median.pack(side=tk.RIGHT)
 
 
@@ -289,7 +302,8 @@ box_log.pack(side=tk.RIGHT)
 frm6 = Frame(root)
 frm6.pack(side=BOTTOM, padx=15, pady=5)
 check_equal = IntVar()
-box_equal_hits = Checkbutton(frm6, text="Equalize Histogram", variable=check_equal, command=test)
+box_equal_hits = Checkbutton(
+    frm6, text="Equalize Histogram", variable=check_equal, command=test)
 box_equal_hits.pack(side=tk.LEFT)
 
 frm7 = Frame(root)
@@ -307,12 +321,14 @@ input_y.pack(side=tk.LEFT)
 btn_plot = Button(frm7, text="See Plot", command=show_linear)
 btn_plot.pack(side=tk.LEFT, padx=10)
 check_lp = IntVar()
-box_lp = Checkbutton(frm7, text="Linear Parts Apply", variable=check_lp, command=test) # depois testar com command=test
+box_lp = Checkbutton(frm7, text="Linear Parts Apply", variable=check_lp,
+                     command=test)  # depois testar com command=test
 box_lp.pack(side=tk.BOTTOM)
 
 frm8 = Frame(root)
 frm8.pack(side=BOTTOM, padx=15, pady=5)
-btn_esteg = Button(frm8, text="Decodificar Esteganografia", command=decodificar_estegnografia)
+btn_esteg = Button(frm8, text="Decodificar Esteganografia",
+                   command=decodificar_estegnografia)
 btn_esteg.pack(side=tk.TOP, padx=10)
 frase_entrada = Label(frm8, text='')
 frase_entrada.pack(side=tk.BOTTOM)
@@ -325,7 +341,8 @@ lbl_esteg = Label(frm9, text='Entre uma frase: ')
 lbl_esteg.pack(side=tk.LEFT)
 entry_esteg = Entry(frm9)
 entry_esteg.pack(side=tk.LEFT)
-btn_esteg = Button(frm9, text="Gerar Esteganografia", command=realizar_estegnografia)
+btn_esteg = Button(frm9, text="Gerar Esteganografia",
+                   command=realizar_estegnografia)
 btn_esteg.pack(side=tk.LEFT, padx=10)
 
 

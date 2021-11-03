@@ -102,16 +102,17 @@ class Img():
         temp_img = array/255
         for i in range(len(temp_img)):
             for j in range(len(temp_img[i])):
-                temp_img[i][j] = fc.linear_parts(points_x, points_y, temp_img[i][j])
+                temp_img[i][j] = fc.linear_parts(
+                    points_x, points_y, temp_img[i][j])
         temp_img = (temp_img * 255).astype(np.uint8)
         self.return_img = temp_img
         print('linear test')
         return self.return_img
 
     def laplacian_filter_test(self, array):
-        laplacian = np.array([[0,1,0], 
-                              [1,-4,1], 
-                              [0,1,0]])
+        laplacian = np.array([[0, 1, 0],
+                              [1, -4, 1],
+                              [0, 1, 0]])
         temp_img = array
         temp_img = convolve2d(abs(temp_img), laplacian)
         temp_img = fc.normalize_img(temp_img)
@@ -119,15 +120,15 @@ class Img():
         return self.return_img
 
     def high_boost_filter_test(self, array):
-        gaussian = np.array([[1,2,1],
-                             [2,8,2],
-                             [1,2,1]])
+        gaussian = np.array([[1, 2, 1],
+                             [2, -8, 2],
+                             [1, 2, 1]])
         temp_img = array
         ipg = convolve2d(abs(temp_img), gaussian)
         shp = ipg.shape
         ipg = ipg[0:shp[0]-2, 0:shp[1]-2]
         ib = temp_img - ipg
-        self.return_img = (ib*15)
+        self.return_img = fc.normalize_img((ib*1.5))
         return self.return_img
 
     def mean_simple_filter_test(self, array, size):
@@ -222,16 +223,16 @@ class Img():
         temp_img = self.img_now/255
         for i in range(len(temp_img)):
             for j in range(len(temp_img[i])):
-                temp_img[i][j] = fc.linear_parts(points_x, points_y, temp_img[i][j])
+                temp_img[i][j] = fc.linear_parts(
+                    points_x, points_y, temp_img[i][j])
         temp_img = (temp_img * 255).astype(np.uint8)
         self.img_now = temp_img
         return Image.fromarray(self.img_now)
 
-
     def laplacian_filter_apply(self):
-        laplacian = np.array([[0,1,0], 
-                              [1,-4,1], 
-                              [0,1,0]])
+        laplacian = np.array([[0, 1, 0],
+                              [1, -4, 1],
+                              [0, 1, 0]])
         temp_img = self.img_now
         temp_img = convolve2d(abs(temp_img), laplacian)
         shp = self.img_now.shape
@@ -240,15 +241,17 @@ class Img():
         return Image.fromarray(self.img_now)
 
     def high_boost_filter_apply(self):
-        gaussian = np.array([[1,2,1],
-                             [2,8,2],
-                             [1,2,1]])
+        gaussian = np.array([[1, 2, 1],
+                             [2, -8, 2],
+                             [1, 2, 1]])
         temp_img = self.img_now
+        shp = self.img_now.shape
         ipg = convolve2d(abs(temp_img), gaussian)
+        ipg = ipg[0:shp[0], 0:shp[1]]
         ib = temp_img - ipg
-        ibn = fc.normalize_img(ib)
-        self.return_img = ibn*1.5
-        return self.return_img
+        ib = ib[0:shp[0], 0:shp[1]]
+        self.img_now = self.img_now + (0.05*ib)
+        return Image.fromarray(self.img_now)
 
     def mean_simple_filter_apply(self, size):
         kernel = fc.generate_mean_simple_kernel(size)
@@ -287,7 +290,7 @@ class Img():
             character_list.append(format(ord(i), '08b'))
 
         height, width, color = img.shape
-        
+
         PixReq = len(character_list) * 3
 
         RowReq = PixReq/width
@@ -319,7 +322,7 @@ class Img():
         # Write the encrypted image into a new file
         cv2.imwrite("media/encrypted_image.png", img)
         return img
-    
+
     def decrypt(self, img):
 
         character_list = []
@@ -356,13 +359,15 @@ class Img():
 
         return decoded_text
 
+
 if __name__ == "__main__":
-    laplacian = np.array([[1,1,1], [1,-8.5,1], [1,1,1]])
+    laplacian = np.array([[1, 1, 1], [1, -8.5, 1], [1, 1, 1]])
     # h_sobel = np.array([[1, 2, 1], [0, 0, 0], [-1, -2, -1]])
     # v_sobel = np.array([[1, 0, -1], [2, 0, -2], [1, 0, -1]])
     from sklearn.preprocessing import normalize
 
-    img = Image.open('../../Downloads/Imagens_PDI/DIP3E_Original_Images_CH03/Fig0354(a)(einstein_orig).tif')
+    img = Image.open(
+        '../../Downloads/Imagens_PDI/DIP3E_Original_Images_CH03/Fig0354(a)(einstein_orig).tif')
     img.show()
 
     array = np.array(img)
@@ -377,7 +382,3 @@ if __name__ == "__main__":
     norm_img = norm_img*255
     norm_img = Image.fromarray(norm_img)
     norm_img.show()
-
-    
-
-
