@@ -83,6 +83,10 @@ def apply():
     if check_filter_median.get() == 1:
         size = option_kernel_size.get()
         img_now = img.median_filter_apply(size)
+    if check_filter_sobel_x.get() == 1:
+        img_now = img.sobel_x_filter_apply()
+    if check_filter_sobel_y.get() == 1:
+        img_now = img.sobel_y_filter_apply()
 
     if len(input_x.get()) > 0 and check_lp.get() == 1:
         points_x = input_x.get()
@@ -115,6 +119,8 @@ def apply():
     box_mean_weighted.deselect()
     box_median.deselect()
     box_high_boost.deselect()
+    box_sobel_x.deselect()
+    box_sobel_y.deselect()
 
 
 """
@@ -149,6 +155,10 @@ def test(*args):
         img_test = img.median_filter_test(img_test, size)
     if check_filter_high_boost.get() == 1:
         img_test = img.high_boost_filter_test(img_test)
+    if check_filter_sobel_x.get() == 1:
+        img_test = img.sobel_x_filter_test(img_test)
+    if check_filter_sobel_y.get() == 1:
+        img_test = img.sobel_y_filter_test(img_test)
 
     if len(input_x.get()) > 0 and check_lp.get() == 1:
         points_x = input_x.get()
@@ -212,6 +222,16 @@ filter.configure()
 
 frm_filter = Frame(filter)
 frm_filter.pack(side=BOTTOM, padx=15, pady=5)
+
+check_filter_sobel_y = IntVar()
+box_sobel_y = Checkbutton(
+    frm_filter, text="Sobel Y", variable=check_filter_sobel_y, command=test)
+box_sobel_y.pack(side=tk.BOTTOM)
+check_filter_sobel_x = IntVar()
+box_sobel_x = Checkbutton(
+    frm_filter, text="Sobel X", variable=check_filter_sobel_x, command=test)
+box_sobel_x.pack(side=tk.BOTTOM)
+
 check_filter_laplacian = IntVar()
 box_laplacian = Checkbutton(
     frm_filter, text="Laplacian", variable=check_filter_laplacian, command=test)
