@@ -125,10 +125,30 @@ class Img():
                              [1, 2, 1]])
         temp_img = array
         ipg = convolve2d(abs(temp_img), gaussian)
-        shp = ipg.shape
-        ipg = ipg[0:shp[0]-2, 0:shp[1]-2]
+        shp = temp_img.shape
+        ipg = ipg[0:shp[0], 0:shp[1]]
         ib = temp_img - ipg
         self.return_img = fc.normalize_img((ib*1.5))
+        return self.return_img
+
+    def sobel_x_filter_test(self, array):
+        sobel_x = np.array([[-1, 0, 1],
+                            [-2, 0, 2],
+                            [-1, 0, 1]])
+        temp_img = array
+        temp_img = convolve2d(abs(temp_img), sobel_x)
+        temp_img = fc.normalize_img(temp_img)
+        self.return_img = temp_img
+        return self.return_img
+
+    def sobel_y_filter_test(self, array):
+        sobel_y = np.array([[-1, -2, -1],
+                            [0, 0, 0],
+                            [1, 2, 1]])
+        temp_img = array
+        temp_img = convolve2d(abs(temp_img), sobel_y)
+        temp_img = fc.normalize_img(temp_img)
+        self.return_img = temp_img
         return self.return_img
 
     def mean_simple_filter_test(self, array, size):
@@ -236,8 +256,8 @@ class Img():
         temp_img = self.img_now
         temp_img = convolve2d(abs(temp_img), laplacian)
         shp = self.img_now.shape
-        k = temp_img[0:shp[0], 0:shp[1]]
-        self.img_now = self.img_now + (0.3*k)
+        ip = temp_img[0:shp[0], 0:shp[1]]
+        self.img_now = self.img_now + (0.3*ip)
         return Image.fromarray(self.img_now)
 
     def high_boost_filter_apply(self):
@@ -251,6 +271,28 @@ class Img():
         ib = temp_img - ipg
         ib = ib[0:shp[0], 0:shp[1]]
         self.img_now = self.img_now + (0.05*ib)
+        return Image.fromarray(self.img_now)
+
+    def sobel_x_filter_apply(self):
+        sobel_x = np.array([[-1, 0, 1],
+                            [-2, 0, 2],
+                            [-1, 0, 1]])
+        temp_img = self.img_now
+        temp_img = convolve2d(abs(temp_img), sobel_x)
+        shp = self.img_now.shape
+        ip = temp_img[0:shp[0], 0:shp[1]]
+        self.img_now = self.img_now + (0.3*ip)
+        return Image.fromarray(self.img_now)
+
+    def sobel_y_filter_apply(self):
+        sobel_y = np.array([[-1, -2, -1],
+                            [0, 0, 0],
+                            [1, 2, 1]])
+        temp_img = self.img_now
+        temp_img = convolve2d(abs(temp_img), sobel_y)
+        shp = self.img_now.shape
+        ip = temp_img[0:shp[0], 0:shp[1]]
+        self.img_now = self.img_now + (0.3*ip)
         return Image.fromarray(self.img_now)
 
     def mean_simple_filter_apply(self, size):
