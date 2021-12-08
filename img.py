@@ -295,6 +295,78 @@ class Img():
         self.img_now = self.img_now + (0.3*ip)
         return Image.fromarray(self.img_now)
 
+    def non_linear(self):
+        filter1 = np.array([[-1, 0, 1],
+                            [-1, 0, 1],
+                            [-1, 0, 1]])
+        filter2 = np.array([[-1, -1, -1],
+                            [0, 0, 0],
+                            [1, 1, 1]])
+        temp_img = self.img_now
+        x = convolve2d(abs(temp_img), filter1)
+        y = convolve2d(abs(temp_img), filter2)
+        temp_img = np.abs(x) + np.abs(y)
+        shp = self.img_now.shape
+        ip = temp_img[0:shp[0], 0:shp[1]]
+        self.img_now = ip
+        return Image.fromarray(self.img_now)
+
+    def limiar(self):
+        temp_img = self.img_now
+        temp_img = cv2.adaptiveThreshold(temp_img, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C, 
+                                         cv2.THRESH_BINARY, 199, 5)
+        self.img_now = temp_img
+        return Image.fromarray(self.img_now)
+
+    def fourier(self):
+        temp_img = self.img_now
+        temp_img = temp_img/255
+        temp_img = np.fft.fft2(temp_img)
+        temp_img = np.fft.fftshift(temp_img)
+
+        self.img_now = (np.uint8(np.clip(np.real(temp_img) * 255, 0, 255)))
+        return fc.from_array(np.real(temp_img))
+
+    def high_fourier(self):
+        temp_img = self.img_now
+        temp_img = temp_img/255
+        temp_img = np.fft.fft2(temp_img)
+        temp_img = np.fft.fftshift(temp_img)
+
+        mask = fc.create_circular_mask(temp_img.shape[0], temp_img.shape[1], radius=20)
+        temp_img = mask * temp_img
+
+        temp_img = np.fft.ifftshift(temp_img)
+        temp_img = np.fft.ifft2(temp_img)
+
+        self.img_now = (np.uint8(np.clip(np.real(temp_img) * 255, 0, 255)))
+        return fc.from_array(np.real(temp_img))
+
+    def low_fourier(self):
+        temp_img = self.img_now
+        temp_img = temp_img/255
+        temp_img = np.fft.fft2(temp_img)
+        temp_img = np.fft.fftshift(temp_img)
+
+        mask = fc.create_circular_mask(temp_img.shape[0], temp_img.shape[1], radius=20)
+        temp_img = (1 - mask) * temp_img
+
+        temp_img = np.fft.ifftshift(temp_img)
+        temp_img = np.fft.ifft2(temp_img)
+
+        self.img_now = (np.uint8(np.clip(np.real(temp_img) * 255, 0, 255)))
+        return fc.from_array(np.real(temp_img))
+
+    def gray_scale_mean(self):
+        temp_img = np.mean(self.img_now, axis=2)
+        self.img_now = temp_img
+        return Image.fromarray(self.img_now)
+
+    def gray_scale_avg(self):
+        temp_img = np.average(self.img_now, weights=[0.299, 0.587, 0.114], axis=2)
+        self.img_now = temp_img
+        return Image.fromarray(self.img_now)
+
     def mean_simple_filter_apply(self, size):
         kernel = fc.generate_mean_simple_kernel(size)
         temp_img = self.img_now

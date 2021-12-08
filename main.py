@@ -87,6 +87,20 @@ def apply():
         img_now = img.sobel_x_filter_apply()
     if check_filter_sobel_y.get() == 1:
         img_now = img.sobel_y_filter_apply()
+    if check_filter_edge.get() == 1:
+        img_now = img.non_linear()
+    if check_grayscale_mean.get() == 1:
+        img_now = img.gray_scale_mean()
+    if check_grayscale_avg.get() == 1:
+        img_now = img.gray_scale_avg()
+    if check_high_fourier.get() == 1:
+        img_now = img.high_fourier()
+    if check_low_fourier.get() == 1:
+        img_now = img.low_fourier()
+    if check_fourier.get() == 1:
+        img_now = img.fourier()
+    if check_limiar.get() == 1:
+        img_now = img.limiar()
 
     if len(input_x.get()) > 0 and check_lp.get() == 1:
         points_x = input_x.get()
@@ -121,6 +135,13 @@ def apply():
     box_high_boost.deselect()
     box_sobel_x.deselect()
     box_sobel_y.deselect()
+    box_edge.deselect()
+    box_grayscale_mean.deselect()
+    box_grayscale_avg.deselect()
+    box_low_fourier.deselect()
+    box_high_fourier.deselect()
+    box_fourier.deselect()
+    box_limiar.deselect()
 
 
 """
@@ -204,7 +225,7 @@ def decodificar_estegnografia():
 # janela principal do programa
 root = Tk()
 root.title('GUI PDI')
-root.geometry('650x900')
+root.geometry('650x950')
 root.configure()
 
 curve = Toplevel(root)
@@ -217,11 +238,40 @@ lbl_img_curve.pack()
 
 filter = Toplevel(root)
 filter.title("Extra")
-filter.geometry('640x200')
+filter.geometry('640x350')
 filter.configure()
 
 frm_filter = Frame(filter)
 frm_filter.pack(side=BOTTOM, padx=15, pady=5)
+
+check_limiar = IntVar()
+box_limiar = Checkbutton(frm_filter, text="Limiar", variable=check_limiar)
+box_limiar.pack(side=tk.BOTTOM)
+
+check_fourier = IntVar()
+box_fourier = Checkbutton(frm_filter, text="Des Fourier", variable=check_fourier)
+box_fourier.pack(side=tk.BOTTOM)
+
+check_high_fourier = IntVar()
+box_high_fourier = Checkbutton(frm_filter, text="High Fourier", variable=check_high_fourier)
+box_high_fourier.pack(side=tk.BOTTOM)
+
+check_low_fourier = IntVar()
+box_low_fourier = Checkbutton(frm_filter, text="Low Fourier", variable=check_low_fourier)
+box_low_fourier.pack(side=tk.BOTTOM)
+
+check_grayscale_avg = IntVar()
+box_grayscale_avg = Checkbutton(frm_filter, text="Gray Scale AVG", variable=check_grayscale_avg)
+box_grayscale_avg.pack(side=tk.BOTTOM)
+
+check_grayscale_mean = IntVar()
+box_grayscale_mean = Checkbutton(frm_filter, text="Gray Scale Mean", variable=check_grayscale_mean)
+box_grayscale_mean.pack(side=tk.BOTTOM)
+
+check_filter_edge = IntVar()
+box_edge = Checkbutton(
+    frm_filter, text="Non Linear Edge Detection", variable=check_filter_edge)#, command=test)
+box_edge.pack(side=tk.BOTTOM)
 
 check_filter_sobel_y = IntVar()
 box_sobel_y = Checkbutton(
