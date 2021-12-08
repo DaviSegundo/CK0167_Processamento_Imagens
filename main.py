@@ -225,24 +225,18 @@ def decodificar_estegnografia():
 # janela principal do programa
 root = Tk()
 root.title('GUI PDI')
-root.geometry('650x950')
+root.geometry('1300x950')
 root.configure()
 
-curve = Toplevel(root)
-curve.title("LP Plot")
-curve.geometry('640x480')
-curve.configure()
-lbl_img_curve = Label(
-    curve, text='Insert Values on Points X & Y and Press "See Plot"')
-lbl_img_curve.pack()
+frm_side = Frame(root)
+frm_side.pack(side=RIGHT, padx=15, pady=5)
 
-filter = Toplevel(root)
-filter.title("Extra")
-filter.geometry('640x350')
-filter.configure()
-
-frm_filter = Frame(filter)
+frm_filter = Frame(frm_side)
 frm_filter.pack(side=BOTTOM, padx=15, pady=5)
+
+lbl_img_curve = Label(
+    frm_side, text='Insert Values on Points X & Y and Press "See Plot"')
+lbl_img_curve.pack(side=TOP)
 
 check_limiar = IntVar()
 box_limiar = Checkbutton(frm_filter, text="Limiar", variable=check_limiar)
@@ -315,6 +309,7 @@ check_filter_median = IntVar()
 box_median = Checkbutton(frm_filter, text="Median Filter",
                          variable=check_filter_median, command=test)
 box_median.pack(side=tk.RIGHT)
+
 
 
 """
