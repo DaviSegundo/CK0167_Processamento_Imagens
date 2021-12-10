@@ -175,6 +175,68 @@ class Img():
         self.return_img = np.array(temp_img)
         return self.return_img
 
+    def non_linear_test(self, array):
+        filter1 = np.array([[-1, 0, 1],
+                            [-1, 0, 1],
+                            [-1, 0, 1]])
+        filter2 = np.array([[-1, -1, -1],
+                            [0, 0, 0],
+                            [1, 1, 1]])
+        temp_img = array
+        x = convolve2d(abs(temp_img), filter1)
+        y = convolve2d(abs(temp_img), filter2)
+        temp_img = np.abs(x) + np.abs(y)
+        shp = self.img_now.shape
+        ip = temp_img[0:shp[0], 0:shp[1]]
+        self.return_img = ip
+        return self.return_img
+
+    def limiar_test(self, array):
+        temp_img = array
+        temp_img = cv2.adaptiveThreshold(temp_img, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C, 
+                                         cv2.THRESH_BINARY, 199, 5)
+        self.return_img = temp_img
+        return self.return_img
+
+    def fourier_test(self, array):
+        temp_img = array
+        temp_img = temp_img/255
+        temp_img = np.fft.fft2(temp_img)
+        temp_img = np.fft.fftshift(temp_img)
+
+        self.return_img = (np.uint8(np.clip(np.real(temp_img) * 255, 0, 255)))
+        return (np.real(self.return_img))
+
+    def high_fourier_test(self, array, radius=20):
+        temp_img = array
+        temp_img = temp_img/255
+        temp_img = np.fft.fft2(temp_img)
+        temp_img = np.fft.fftshift(temp_img)
+
+        mask = fc.create_circular_mask(temp_img.shape[0], temp_img.shape[1], radius=radius)
+        temp_img = mask * temp_img
+
+        temp_img = np.fft.ifftshift(temp_img)
+        temp_img = np.fft.ifft2(temp_img)
+
+        self.return_img = (np.uint8(np.clip(np.real(temp_img) * 255, 0, 255)))
+        return (np.real(self.return_img))
+
+    def low_fourier_test(self, array, radius=20):
+        temp_img = array
+        temp_img = temp_img/255
+        temp_img = np.fft.fft2(temp_img)
+        temp_img = np.fft.fftshift(temp_img)
+
+        mask = fc.create_circular_mask(temp_img.shape[0], temp_img.shape[1], radius=radius)
+        temp_img = (1 - mask) * temp_img
+
+        temp_img = np.fft.ifftshift(temp_img)
+        temp_img = np.fft.ifft2(temp_img)
+
+        self.return_img = (np.uint8(np.clip(np.real(temp_img) * 255, 0, 255)))
+        return (np.real(self.return_img))
+
     def convert(self, array):
         return Image.fromarray(array)
 
@@ -328,13 +390,13 @@ class Img():
         self.img_now = (np.uint8(np.clip(np.real(temp_img) * 255, 0, 255)))
         return fc.from_array(np.real(temp_img))
 
-    def high_fourier(self):
+    def high_fourier(self, radius=20):
         temp_img = self.img_now
         temp_img = temp_img/255
         temp_img = np.fft.fft2(temp_img)
         temp_img = np.fft.fftshift(temp_img)
 
-        mask = fc.create_circular_mask(temp_img.shape[0], temp_img.shape[1], radius=20)
+        mask = fc.create_circular_mask(temp_img.shape[0], temp_img.shape[1], radius=radius)
         temp_img = mask * temp_img
 
         temp_img = np.fft.ifftshift(temp_img)
@@ -343,13 +405,13 @@ class Img():
         self.img_now = (np.uint8(np.clip(np.real(temp_img) * 255, 0, 255)))
         return fc.from_array(np.real(temp_img))
 
-    def low_fourier(self):
+    def low_fourier(self, radius=20):
         temp_img = self.img_now
         temp_img = temp_img/255
         temp_img = np.fft.fft2(temp_img)
         temp_img = np.fft.fftshift(temp_img)
 
-        mask = fc.create_circular_mask(temp_img.shape[0], temp_img.shape[1], radius=20)
+        mask = fc.create_circular_mask(temp_img.shape[0], temp_img.shape[1], radius=radius)
         temp_img = (1 - mask) * temp_img
 
         temp_img = np.fft.ifftshift(temp_img)
