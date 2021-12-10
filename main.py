@@ -60,10 +60,12 @@ def apply():
     # pega os valores informados nos scalers
     brightness = scl_brigh.get()/100
     gama = scl_gama.get()/100
+    saturation = (scl_saturation.get()-300)/100
 
     # realiza as transformações nas imagens de acordo com os valores
     img_now = img.brightness_apply(brightness)
     img_now = img.gama_apply(gama)
+    
     if check_neg.get() == 1:
         img_now = img.negative_image()
     if check_log.get() == 1:
@@ -101,6 +103,9 @@ def apply():
         img_now = img.fourier()
     if check_limiar.get() == 1:
         img_now = img.limiar()
+    if check_hsv.get() == 1:
+        img_now = img.to_hsv()
+    img_now = img.saturation(saturation)
 
     if len(input_x.get()) > 0 and check_lp.get() == 1:
         points_x = input_x.get()
@@ -142,6 +147,7 @@ def apply():
     box_high_fourier.deselect()
     box_fourier.deselect()
     box_limiar.deselect()
+    box_hsv.deselect()
 
 
 """
@@ -237,6 +243,10 @@ frm_filter.pack(side=BOTTOM, padx=15, pady=5)
 lbl_img_curve = Label(
     frm_side, text='Insert Values on Points X & Y and Press "See Plot"')
 lbl_img_curve.pack(side=TOP)
+
+check_hsv = IntVar()
+box_hsv = Checkbutton(frm_filter, text="HSV", variable=check_hsv)
+box_hsv.pack(side=tk.BOTTOM)
 
 check_limiar = IntVar()
 box_limiar = Checkbutton(frm_filter, text="Limiar", variable=check_limiar)
@@ -341,6 +351,12 @@ scl_brigh = Scale(frm3, from_=0, to=300, orient=HORIZONTAL,
                   length=400, command=test)
 scl_brigh.set(100)
 scl_brigh.pack(side=tk.BOTTOM, padx=10)
+
+scl_saturation = Scale(frm_side, from_=0, to=600, orient=HORIZONTAL, length=300)
+scl_saturation.set(300)
+scl_saturation.pack(side=BOTTOM, padx=10)
+lbl_saturation = Label(frm_side, text='Saturation')
+lbl_saturation.pack(side=BOTTOM)
 
 # scaler de gama
 frm4 = Frame(root)

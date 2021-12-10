@@ -1,4 +1,4 @@
-from PIL import Image, ImageFilter
+from PIL import Image, ImageFilter, ImageEnhance
 import os
 import io
 import numpy as np
@@ -7,6 +7,7 @@ from scipy.signal import convolve2d
 import functions as fc
 import cv2
 from math import ceil
+from skimage.color import rgb2hsv
 
 
 class Img():
@@ -385,6 +386,22 @@ class Img():
         temp_img = self.img_now
         temp_img = Image.fromarray(temp_img)
         temp_img = temp_img.filter(ImageFilter.MedianFilter(size))
+        self.img_now = np.array(temp_img)
+        return Image.fromarray(self.img_now)
+
+    def to_hsv(self):
+        temp_img = self.img_now
+        temp_img = temp_img/255
+        temp_img = rgb2hsv(temp_img)
+        self.img_now = temp_img
+        self.img_now = (np.uint8(np.clip(np.real(temp_img) * 255, 0, 255)))
+        return fc.from_array(self.img_now)
+
+    def saturation(self, num):
+        temp_img = self.img_now
+        temp_img = Image.fromarray(temp_img)
+        converter = ImageEnhance.Color(temp_img)
+        temp_img = converter.enhance(num)
         self.img_now = np.array(temp_img)
         return Image.fromarray(self.img_now)
 
