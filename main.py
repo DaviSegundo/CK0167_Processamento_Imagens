@@ -60,10 +60,13 @@ def apply():
     # pega os valores informados nos scalers
     brightness = scl_brigh.get()/100
     gama = scl_gama.get()/100
+    hue = scl_hue.get()
+    saturation = scl_saturation.get()/100
 
     # realiza as transformações nas imagens de acordo com os valores
     img_now = img.brightness_apply(brightness)
     img_now = img.gama_apply(gama)
+    
     if check_neg.get() == 1:
         img_now = img.negative_image()
     if check_log.get() == 1:
@@ -94,13 +97,33 @@ def apply():
     if check_grayscale_avg.get() == 1:
         img_now = img.gray_scale_avg()
     if check_high_fourier.get() == 1:
-        img_now = img.high_fourier()
+        radius = option_radius_size.get()
+        img_now = img.high_fourier(radius=radius)
     if check_low_fourier.get() == 1:
-        img_now = img.low_fourier()
+        radius = option_radius_size.get()
+        img_now = img.low_fourier(radius=radius)
     if check_fourier.get() == 1:
         img_now = img.fourier()
     if check_limiar.get() == 1:
         img_now = img.limiar()
+    if check_hsv.get() == 1:
+        img_now = img.to_hsv()
+    if check_hue.get() == 1:
+        img_now = img.hue(hue=hue)
+    if check_sat.get() == 1:
+        img_now = img.saturation_enc(saturation)
+    if check_col_mean.get() == 1:
+        size = option_kernel_size.get()
+        img_now = img.col_mean_simple_filter_apply(size)
+    if check_col_mean_w.get() == 1:
+        size = option_kernel_size.get()
+        img_now = img.col_mean_weighted_filter_apply(size)
+    if check_col_laplacian.get() == 1:
+        img_now = img.col_laplacian_filter_apply()
+    if check_generic.get() == 1:
+        img_now = img.generic_filter(fc.matriz_convert(0,1,0,1,-4,1,0,1,0))
+    
+    # img_now = img.saturation(saturation)
 
     if len(input_x.get()) > 0 and check_lp.get() == 1:
         points_x = input_x.get()
@@ -142,6 +165,7 @@ def apply():
     box_high_fourier.deselect()
     box_fourier.deselect()
     box_limiar.deselect()
+    box_hsv.deselect()
 
 
 """
@@ -180,6 +204,18 @@ def test(*args):
         img_test = img.sobel_x_filter_test(img_test)
     if check_filter_sobel_y.get() == 1:
         img_test = img.sobel_y_filter_test(img_test)
+    if check_filter_edge.get() == 1:
+        img_test = img.non_linear_test(img_test)
+    if check_limiar.get() == 1:
+        img_test = img.limiar_test(img_test)
+    if check_fourier.get() == 1:
+        img_test = img.fourier_test(img_test)
+    if check_high_fourier.get() == 1:
+        radius = option_radius_size.get()
+        img_test = img.high_fourier_test(img_test, radius=radius)
+    if check_low_fourier.get() == 1:
+        radius = option_radius_size.get()
+        img_test = img.low_fourier_test(img_test, radius=radius)
 
     if len(input_x.get()) > 0 and check_lp.get() == 1:
         points_x = input_x.get()
@@ -211,6 +247,13 @@ def show_linear():
     lbl_img_curve.configure(image=img_curve)
     lbl_img_curve.image = img_curve
 
+def show_colored_hist():
+    img_colored = img.colored_hist()
+    img_colored = ImageTk.PhotoImage(img_colored)
+    
+    lbl_colored_hist.configure(image=img_colored)
+    lbl_colored_hist.image = img_colored
+
 
 def realizar_estegnografia():
     global img_encrypted
@@ -228,31 +271,62 @@ root.title('GUI PDI')
 root.geometry('1300x950')
 root.configure()
 
+colored_hist = Toplevel(root)
+colored_hist.title("Colored Histogram")
+colored_hist.geometry('650x480')
+colored_hist.configure()
+
+lbl_colored_hist = Label(colored_hist)
+lbl_colored_hist.pack(side=TOP)
+
 frm_side = Frame(root)
-frm_side.pack(side=RIGHT, padx=15, pady=5)
+frm_side.pack(side=RIGHT, padx=15)
 
 frm_filter = Frame(frm_side)
-frm_filter.pack(side=BOTTOM, padx=15, pady=5)
+frm_filter.pack(side=BOTTOM, padx=15)
 
 lbl_img_curve = Label(
     frm_side, text='Insert Values on Points X & Y and Press "See Plot"')
 lbl_img_curve.pack(side=TOP)
 
-check_limiar = IntVar()
-box_limiar = Checkbutton(frm_filter, text="Limiar", variable=check_limiar)
-box_limiar.pack(side=tk.BOTTOM)
+btn_col_plot = Button(frm_filter, text="See Colored Hist", command=show_colored_hist)
+btn_col_plot.pack(side=tk.BOTTOM)
 
-check_fourier = IntVar()
-box_fourier = Checkbutton(frm_filter, text="Des Fourier", variable=check_fourier)
-box_fourier.pack(side=tk.BOTTOM)
+check_col_laplacian = IntVar()
+box_col_laplacian = Checkbutton(frm_filter, text="Laplacian Color", variable=check_col_laplacian)
+box_col_laplacian.pack(side=tk.BOTTOM)
 
-check_high_fourier = IntVar()
-box_high_fourier = Checkbutton(frm_filter, text="High Fourier", variable=check_high_fourier)
-box_high_fourier.pack(side=tk.BOTTOM)
+check_col_mean = IntVar()
+box_col_mean = Checkbutton(frm_filter, text="Mean Simple Color", variable=check_col_mean)
+box_col_mean.pack(side=tk.BOTTOM)
 
-check_low_fourier = IntVar()
-box_low_fourier = Checkbutton(frm_filter, text="Low Fourier", variable=check_low_fourier)
-box_low_fourier.pack(side=tk.BOTTOM)
+check_col_mean_w = IntVar()
+box_col_mean_w = Checkbutton(frm_filter, text="Mean Weighted Color", variable=check_col_mean_w)
+box_col_mean_w.pack(side=tk.BOTTOM)
+
+scl_saturation = Scale(frm_filter, from_=10, to=200, orient=HORIZONTAL, length=300)
+scl_saturation.set(0)
+scl_saturation.pack(side=BOTTOM, padx=10)
+lbl_saturation = Label(frm_filter, text='Saturation Adjust')
+lbl_saturation.pack(side=BOTTOM)
+
+scl_hue = Scale(frm_filter, from_=0, to=360, orient=HORIZONTAL, length=300)
+scl_hue.set(0)
+scl_hue.pack(side=BOTTOM, padx=10)
+lbl_hue = Label(frm_filter, text='Hue Adjust')
+lbl_hue.pack(side=BOTTOM)
+
+check_sat = IntVar()
+box_sat = Checkbutton(frm_filter, text="Saturation Confirm", variable=check_sat)
+box_sat.pack(side=tk.BOTTOM)
+
+check_hue = IntVar()
+box_hue = Checkbutton(frm_filter, text="Hue Confirm", variable=check_hue)
+box_hue.pack(side=tk.BOTTOM)
+
+check_hsv = IntVar()
+box_hsv = Checkbutton(frm_filter, text="HSV", variable=check_hsv)
+box_hsv.pack(side=tk.BOTTOM)
 
 check_grayscale_avg = IntVar()
 box_grayscale_avg = Checkbutton(frm_filter, text="Gray Scale AVG", variable=check_grayscale_avg)
@@ -262,9 +336,41 @@ check_grayscale_mean = IntVar()
 box_grayscale_mean = Checkbutton(frm_filter, text="Gray Scale Mean", variable=check_grayscale_mean)
 box_grayscale_mean.pack(side=tk.BOTTOM)
 
+lbl_saturation_hue = Label(frm_filter, text='Color Image')
+lbl_saturation_hue.pack(side=BOTTOM, pady=5)
+
+frm_fourier = Frame(frm_filter)
+frm_fourier.pack(side=BOTTOM)
+
+check_fourier = IntVar()
+box_fourier = Checkbutton(frm_fourier, text="Des Fourier", variable=check_fourier, command=test)
+box_fourier.pack(side=tk.RIGHT)
+
+check_high_fourier = IntVar()
+box_high_fourier = Checkbutton(frm_fourier, text="High Fourier", variable=check_high_fourier, command=test)
+box_high_fourier.pack(side=tk.RIGHT)
+
+check_low_fourier = IntVar()
+box_low_fourier = Checkbutton(frm_fourier, text="Low Fourier", variable=check_low_fourier, command=test)
+box_low_fourier.pack(side=tk.RIGHT)
+
+# Insert Radius value here
+OPTIONS_R = [10, 20, 30, 50, 75, 100, 150]
+option_radius_size = IntVar()
+option_radius_size.set(OPTIONS_R[0])
+option_menu_radius = OptionMenu(
+    frm_fourier, option_radius_size, *OPTIONS_R, command=test)
+option_menu_radius.pack(side=tk.RIGHT)
+
+label_radius = Label(frm_fourier, text="Radius: ")
+label_radius.pack(side=RIGHT)
+
+label_fourier = Label(frm_filter, text="Fourier")
+label_fourier.pack(side=BOTTOM, pady=5)
+
 check_filter_edge = IntVar()
 box_edge = Checkbutton(
-    frm_filter, text="Non Linear Edge Detection", variable=check_filter_edge)#, command=test)
+    frm_filter, text="Non Linear Edge Detection", variable=check_filter_edge, command=test)
 box_edge.pack(side=tk.BOTTOM)
 
 check_filter_sobel_y = IntVar()
@@ -285,6 +391,14 @@ check_filter_high_boost = IntVar()
 box_high_boost = Checkbutton(
     frm_filter, text="High Boost", variable=check_filter_high_boost, command=test)
 box_high_boost.pack(side=tk.BOTTOM)
+
+check_generic = IntVar()
+box_generic = Checkbutton(frm_filter, text="Generic", variable=check_generic)#, command=test)
+box_generic.pack(side=tk.BOTTOM)
+
+check_limiar = IntVar()
+box_limiar = Checkbutton(frm_filter, text="Limiar", variable=check_limiar, command=test)
+box_limiar.pack(side=tk.BOTTOM)
 
 lbl_kernel = Label(frm_filter, text="Kernel Size: ")
 lbl_kernel.pack(side=tk.LEFT)

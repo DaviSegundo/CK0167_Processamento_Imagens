@@ -1,6 +1,33 @@
 import numpy as np
 import matplotlib.pyplot as plt
 from PIL import Image
+import colorsys
+
+def matriz_convert(n1: int, n2: int, n3: int, n4: int, n5: int, n6: int, n7: int, n8: int, n9: int):
+    generic_filter = np.array([[n1,n2,n3],
+                               [n4,n5,n6],
+                               [n7,n8,n9]])
+    return generic_filter
+
+def shift_hue(arr, hout):
+    rgb_to_hsv = np.vectorize(colorsys.rgb_to_hsv)
+    hsv_to_rgb = np.vectorize(colorsys.hsv_to_rgb)
+    r, g, b, a = np.rollaxis(arr, axis=-1)
+    h, s, v = rgb_to_hsv(r, g, b)
+    h = h + hout
+    r, g, b = hsv_to_rgb(h, s, v)
+    arr = np.dstack((r, g, b, a))
+    return arr
+
+def shift_saturation(arr, sout):
+    rgb_to_hsv = np.vectorize(colorsys.rgb_to_hsv)
+    hsv_to_rgb = np.vectorize(colorsys.hsv_to_rgb)
+    r, g, b, a = np.rollaxis(arr, axis=-1)
+    h, s, v = rgb_to_hsv(r, g, b)
+    s = s * sout
+    r, g, b = hsv_to_rgb(h, s, v)
+    arr = np.dstack((r, g, b, a))
+    return arr
 
 def create_circular_mask(h, w, center=None, radius=None):
 
@@ -105,3 +132,7 @@ def normalize_img(array):
     norm = np.interp(array, (array.min(), array.max()), (0, 1))
     norm = norm*255
     return norm
+
+if __name__ == "__main__":
+    n1,n2,n3,n4,n5,n6,n7,n8,n9 = 0,1,0,1,-4,1,0,1,0
+    print(matriz_convert(n1,n2,n3,n4,n5,n6,n7,n8,n9))

@@ -1,4 +1,4 @@
-from PIL import Image, ImageFilter
+from PIL import Image, ImageFilter, ImageEnhance
 import os
 import io
 import numpy as np
@@ -7,6 +7,8 @@ from scipy.signal import convolve2d
 import functions as fc
 import cv2
 from math import ceil
+from skimage.color import rgb2hsv, hsv2rgb
+import colorsys
 
 
 class Img():
@@ -174,6 +176,68 @@ class Img():
         self.return_img = np.array(temp_img)
         return self.return_img
 
+    def non_linear_test(self, array):
+        filter1 = np.array([[-1, 0, 1],
+                            [-1, 0, 1],
+                            [-1, 0, 1]])
+        filter2 = np.array([[-1, -1, -1],
+                            [0, 0, 0],
+                            [1, 1, 1]])
+        temp_img = array
+        x = convolve2d(abs(temp_img), filter1)
+        y = convolve2d(abs(temp_img), filter2)
+        temp_img = np.abs(x) + np.abs(y)
+        shp = self.img_now.shape
+        ip = temp_img[0:shp[0], 0:shp[1]]
+        self.return_img = ip
+        return self.return_img
+
+    def limiar_test(self, array):
+        temp_img = array
+        temp_img = cv2.adaptiveThreshold(temp_img, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C, 
+                                         cv2.THRESH_BINARY, 199, 5)
+        self.return_img = temp_img
+        return self.return_img
+
+    def fourier_test(self, array):
+        temp_img = array
+        temp_img = temp_img/255
+        temp_img = np.fft.fft2(temp_img)
+        temp_img = np.fft.fftshift(temp_img)
+
+        self.return_img = (np.uint8(np.clip(np.real(temp_img) * 255, 0, 255)))
+        return (np.real(self.return_img))
+
+    def high_fourier_test(self, array, radius=20):
+        temp_img = array
+        temp_img = temp_img/255
+        temp_img = np.fft.fft2(temp_img)
+        temp_img = np.fft.fftshift(temp_img)
+
+        mask = fc.create_circular_mask(temp_img.shape[0], temp_img.shape[1], radius=radius)
+        temp_img = mask * temp_img
+
+        temp_img = np.fft.ifftshift(temp_img)
+        temp_img = np.fft.ifft2(temp_img)
+
+        self.return_img = (np.uint8(np.clip(np.real(temp_img) * 255, 0, 255)))
+        return (np.real(self.return_img))
+
+    def low_fourier_test(self, array, radius=20):
+        temp_img = array
+        temp_img = temp_img/255
+        temp_img = np.fft.fft2(temp_img)
+        temp_img = np.fft.fftshift(temp_img)
+
+        mask = fc.create_circular_mask(temp_img.shape[0], temp_img.shape[1], radius=radius)
+        temp_img = (1 - mask) * temp_img
+
+        temp_img = np.fft.ifftshift(temp_img)
+        temp_img = np.fft.ifft2(temp_img)
+
+        self.return_img = (np.uint8(np.clip(np.real(temp_img) * 255, 0, 255)))
+        return (np.real(self.return_img))
+
     def convert(self, array):
         return Image.fromarray(array)
 
@@ -260,6 +324,16 @@ class Img():
         self.img_now = self.img_now + (0.3*ip)
         return Image.fromarray(self.img_now)
 
+    def col_laplacian_filter_apply(self):
+        laplacian = np.array([[0, 1, 0],
+                              [1, -2, 1],
+                              [0, 1, 0]])
+        img_hsv = cv2.cvtColor(self.img_now, cv2.COLOR_RGB2HSV)
+        img_hsv[:,:,2] = convolve2d(img_hsv[:,:,2], laplacian, mode="same")
+        img_rgb = cv2.cvtColor(img_hsv, cv2.COLOR_HSV2RGB)
+        self.img_now = (self.img_now + (0.2*img_rgb)).astype(np.uint8)
+        return Image.fromarray(self.img_now)
+
     def high_boost_filter_apply(self):
         gaussian = np.array([[1, 2, 1],
                              [2, -8, 2],
@@ -295,6 +369,13 @@ class Img():
         self.img_now = self.img_now + (0.3*ip)
         return Image.fromarray(self.img_now)
 
+    def generic_filter(self, matrix):
+        generic = matrix
+        temp_img = self.img_now
+        temp_img = convolve2d(temp_img, generic, mode="same")
+        self.img_now = temp_img
+        return Image.fromarray(self.img_now)
+
     def non_linear(self):
         filter1 = np.array([[-1, 0, 1],
                             [-1, 0, 1],
@@ -327,13 +408,13 @@ class Img():
         self.img_now = (np.uint8(np.clip(np.real(temp_img) * 255, 0, 255)))
         return fc.from_array(np.real(temp_img))
 
-    def high_fourier(self):
+    def high_fourier(self, radius=20):
         temp_img = self.img_now
         temp_img = temp_img/255
         temp_img = np.fft.fft2(temp_img)
         temp_img = np.fft.fftshift(temp_img)
 
-        mask = fc.create_circular_mask(temp_img.shape[0], temp_img.shape[1], radius=20)
+        mask = fc.create_circular_mask(temp_img.shape[0], temp_img.shape[1], radius=radius)
         temp_img = mask * temp_img
 
         temp_img = np.fft.ifftshift(temp_img)
@@ -342,13 +423,13 @@ class Img():
         self.img_now = (np.uint8(np.clip(np.real(temp_img) * 255, 0, 255)))
         return fc.from_array(np.real(temp_img))
 
-    def low_fourier(self):
+    def low_fourier(self, radius=20):
         temp_img = self.img_now
         temp_img = temp_img/255
         temp_img = np.fft.fft2(temp_img)
         temp_img = np.fft.fftshift(temp_img)
 
-        mask = fc.create_circular_mask(temp_img.shape[0], temp_img.shape[1], radius=20)
+        mask = fc.create_circular_mask(temp_img.shape[0], temp_img.shape[1], radius=radius)
         temp_img = (1 - mask) * temp_img
 
         temp_img = np.fft.ifftshift(temp_img)
@@ -374,6 +455,22 @@ class Img():
         self.img_now = temp_img
         return Image.fromarray(self.img_now)
 
+    def col_mean_simple_filter_apply(self, size):
+        kernel = fc.generate_mean_simple_kernel(size)
+        img_hsv = cv2.cvtColor(self.img_now, cv2.COLOR_RGB2HSV)
+        img_hsv[:,:,2] = convolve2d(img_hsv[:,:,2], kernel, mode="same")
+        img_rgb = cv2.cvtColor(img_hsv, cv2.COLOR_HSV2RGB)
+        self.img_now = img_rgb
+        return Image.fromarray(self.img_now)
+
+    def col_mean_weighted_filter_apply(self, size):
+        kernel = fc.generate_mean_weighted_kernel(size)
+        img_hsv = cv2.cvtColor(self.img_now, cv2.COLOR_RGB2HSV)
+        img_hsv[:,:,2] = convolve2d(img_hsv[:,:,2], kernel, mode="same")
+        img_rgb = cv2.cvtColor(img_hsv, cv2.COLOR_HSV2RGB)
+        self.img_now = img_rgb
+        return Image.fromarray(self.img_now)
+
     def mean_weighted_filter_apply(self, size):
         kernel = fc.generate_mean_weighted_kernel(size)
         temp_img = self.img_now
@@ -387,6 +484,63 @@ class Img():
         temp_img = temp_img.filter(ImageFilter.MedianFilter(size))
         self.img_now = np.array(temp_img)
         return Image.fromarray(self.img_now)
+
+    def colored_hist(self):
+        colors = ["red", "green", "blue"]
+        channel_id = [0, 1, 2]
+
+        plt.xlim([0,256])
+        for id, col in zip(channel_id, colors):
+            histogram, bin_edges = np.histogram(self.img_now[:, :, id], bins=256, range=(0, 256))
+            plt.plot(bin_edges[0:-1], histogram, color=col)
+
+        plt.title('Colored Hist', size=15)
+        plt.xlabel("Color value")
+        plt.ylabel("Pixels")
+
+        strfile = './media/colored_hist.png'
+        plt.savefig(strfile, dpi=100)
+        plt.close()
+        return Image.open(strfile)
+
+    def to_hsv(self):
+        temp_img = self.img_now
+        temp_img = temp_img/255
+        temp_img = rgb2hsv(temp_img)
+        self.img_now = temp_img
+        self.img_now = (np.uint8(np.clip(np.real(temp_img) * 255, 0, 255)))
+        return fc.from_array(self.img_now)
+
+    def saturation_enc(self, num):
+        temp_img = self.img_now
+        temp_img = Image.fromarray(temp_img)
+        converter = ImageEnhance.Color(temp_img)
+        temp_img = converter.enhance(num)
+        self.img_now = np.array(temp_img)
+        return Image.fromarray(self.img_now)
+
+    def hue(self, hue=270):
+        temp_img = self.img_now
+        
+        image = Image.fromarray(temp_img)
+        img = image.convert('RGBA')
+        arr = np.array(np.asarray(img).astype('float'))
+        new_img = Image.fromarray(fc.shift_hue(arr, hue/360.).astype('uint8'), 'RGBA')
+
+        self.img_now = np.array((arr * 255)).astype(np.uint8)
+        return new_img
+
+    def saturation(self, saturation):
+        temp_img = self.img_now
+        
+        image = Image.fromarray(temp_img)
+        img = image.convert('RGBA')
+        arr = np.array(np.asarray(img).astype('float'))
+        new_img = Image.fromarray(fc.shift_hue(arr, saturation).astype('uint8'), 'RGBA')
+
+        self.img_now = np.array((arr * 255)).astype(np.uint8)
+        return new_img
+        
 
     def img_to_array(self):
         img_byte_arr = io.BytesIO()
