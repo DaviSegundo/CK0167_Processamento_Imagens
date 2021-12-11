@@ -61,7 +61,7 @@ def apply():
     brightness = scl_brigh.get()/100
     gama = scl_gama.get()/100
     hue = scl_hue.get()
-    saturation = scl_saturation.get()
+    saturation = scl_saturation.get()/100
 
     # realiza as transformações nas imagens de acordo com os valores
     img_now = img.brightness_apply(brightness)
@@ -111,7 +111,17 @@ def apply():
     if check_hue.get() == 1:
         img_now = img.hue(hue=hue)
     if check_sat.get() == 1:
-        img_now = img.saturation(saturation=saturation)
+        img_now = img.saturation_enc(saturation)
+    if check_col_mean.get() == 1:
+        size = option_kernel_size.get()
+        img_now = img.col_mean_simple_filter_apply(size)
+    if check_col_mean_w.get() == 1:
+        size = option_kernel_size.get()
+        img_now = img.col_mean_weighted_filter_apply(size)
+    if check_col_laplacian.get() == 1:
+        img_now = img.col_laplacian_filter_apply()
+    if check_generic.get() == 1:
+        img_now = img.generic_filter(fc.matriz_convert(0,1,0,1,-4,1,0,1,0))
     
     # img_now = img.saturation(saturation)
 
@@ -282,7 +292,19 @@ lbl_img_curve.pack(side=TOP)
 btn_col_plot = Button(frm_filter, text="See Colored Hist", command=show_colored_hist)
 btn_col_plot.pack(side=tk.BOTTOM)
 
-scl_saturation = Scale(frm_filter, from_=0, to=360, orient=HORIZONTAL, length=300)
+check_col_laplacian = IntVar()
+box_col_laplacian = Checkbutton(frm_filter, text="Laplacian Color", variable=check_col_laplacian)
+box_col_laplacian.pack(side=tk.BOTTOM)
+
+check_col_mean = IntVar()
+box_col_mean = Checkbutton(frm_filter, text="Mean Simple Color", variable=check_col_mean)
+box_col_mean.pack(side=tk.BOTTOM)
+
+check_col_mean_w = IntVar()
+box_col_mean_w = Checkbutton(frm_filter, text="Mean Weighted Color", variable=check_col_mean_w)
+box_col_mean_w.pack(side=tk.BOTTOM)
+
+scl_saturation = Scale(frm_filter, from_=10, to=200, orient=HORIZONTAL, length=300)
 scl_saturation.set(0)
 scl_saturation.pack(side=BOTTOM, padx=10)
 lbl_saturation = Label(frm_filter, text='Saturation Adjust')
@@ -369,6 +391,10 @@ check_filter_high_boost = IntVar()
 box_high_boost = Checkbutton(
     frm_filter, text="High Boost", variable=check_filter_high_boost, command=test)
 box_high_boost.pack(side=tk.BOTTOM)
+
+check_generic = IntVar()
+box_generic = Checkbutton(frm_filter, text="Generic", variable=check_generic)#, command=test)
+box_generic.pack(side=tk.BOTTOM)
 
 check_limiar = IntVar()
 box_limiar = Checkbutton(frm_filter, text="Limiar", variable=check_limiar, command=test)

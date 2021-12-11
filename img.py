@@ -324,6 +324,16 @@ class Img():
         self.img_now = self.img_now + (0.3*ip)
         return Image.fromarray(self.img_now)
 
+    def col_laplacian_filter_apply(self):
+        laplacian = np.array([[0, 1, 0],
+                              [1, -2, 1],
+                              [0, 1, 0]])
+        img_hsv = cv2.cvtColor(self.img_now, cv2.COLOR_RGB2HSV)
+        img_hsv[:,:,2] = convolve2d(img_hsv[:,:,2], laplacian, mode="same")
+        img_rgb = cv2.cvtColor(img_hsv, cv2.COLOR_HSV2RGB)
+        self.img_now = (self.img_now + (0.2*img_rgb)).astype(np.uint8)
+        return Image.fromarray(self.img_now)
+
     def high_boost_filter_apply(self):
         gaussian = np.array([[1, 2, 1],
                              [2, -8, 2],
@@ -357,6 +367,13 @@ class Img():
         shp = self.img_now.shape
         ip = temp_img[0:shp[0], 0:shp[1]]
         self.img_now = self.img_now + (0.3*ip)
+        return Image.fromarray(self.img_now)
+
+    def generic_filter(self, matrix):
+        generic = matrix
+        temp_img = self.img_now
+        temp_img = convolve2d(temp_img, generic, mode="same")
+        self.img_now = temp_img
         return Image.fromarray(self.img_now)
 
     def non_linear(self):
@@ -438,6 +455,22 @@ class Img():
         self.img_now = temp_img
         return Image.fromarray(self.img_now)
 
+    def col_mean_simple_filter_apply(self, size):
+        kernel = fc.generate_mean_simple_kernel(size)
+        img_hsv = cv2.cvtColor(self.img_now, cv2.COLOR_RGB2HSV)
+        img_hsv[:,:,2] = convolve2d(img_hsv[:,:,2], kernel, mode="same")
+        img_rgb = cv2.cvtColor(img_hsv, cv2.COLOR_HSV2RGB)
+        self.img_now = img_rgb
+        return Image.fromarray(self.img_now)
+
+    def col_mean_weighted_filter_apply(self, size):
+        kernel = fc.generate_mean_weighted_kernel(size)
+        img_hsv = cv2.cvtColor(self.img_now, cv2.COLOR_RGB2HSV)
+        img_hsv[:,:,2] = convolve2d(img_hsv[:,:,2], kernel, mode="same")
+        img_rgb = cv2.cvtColor(img_hsv, cv2.COLOR_HSV2RGB)
+        self.img_now = img_rgb
+        return Image.fromarray(self.img_now)
+
     def mean_weighted_filter_apply(self, size):
         kernel = fc.generate_mean_weighted_kernel(size)
         temp_img = self.img_now
@@ -478,7 +511,7 @@ class Img():
         self.img_now = (np.uint8(np.clip(np.real(temp_img) * 255, 0, 255)))
         return fc.from_array(self.img_now)
 
-    def saturation(self, num):
+    def saturation_enc(self, num):
         temp_img = self.img_now
         temp_img = Image.fromarray(temp_img)
         converter = ImageEnhance.Color(temp_img)
@@ -497,13 +530,13 @@ class Img():
         self.img_now = np.array((arr * 255)).astype(np.uint8)
         return new_img
 
-    def saturation(self, saturation=270):
+    def saturation(self, saturation):
         temp_img = self.img_now
         
         image = Image.fromarray(temp_img)
         img = image.convert('RGBA')
         arr = np.array(np.asarray(img).astype('float'))
-        new_img = Image.fromarray(fc.shift_hue(arr, saturation/360.).astype('uint8'), 'RGBA')
+        new_img = Image.fromarray(fc.shift_hue(arr, saturation).astype('uint8'), 'RGBA')
 
         self.img_now = np.array((arr * 255)).astype(np.uint8)
         return new_img
