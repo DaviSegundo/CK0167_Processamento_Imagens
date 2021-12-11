@@ -452,6 +452,24 @@ class Img():
         self.img_now = np.array(temp_img)
         return Image.fromarray(self.img_now)
 
+    def colored_hist(self):
+        colors = ["red", "green", "blue"]
+        channel_id = [0, 1, 2]
+
+        plt.xlim([0,256])
+        for id, col in zip(channel_id, colors):
+            histogram, bin_edges = np.histogram(self.img_now[:, :, id], bins=256, range=(0, 256))
+            plt.plot(bin_edges[0:-1], histogram, color=col)
+
+        plt.title('Colored Hist', size=15)
+        plt.xlabel("Color value")
+        plt.ylabel("Pixels")
+
+        strfile = './media/colored_hist.png'
+        plt.savefig(strfile, dpi=100)
+        plt.close()
+        return Image.open(strfile)
+
     def to_hsv(self):
         temp_img = self.img_now
         temp_img = temp_img/255

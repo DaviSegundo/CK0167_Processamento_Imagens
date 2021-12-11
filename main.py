@@ -237,6 +237,13 @@ def show_linear():
     lbl_img_curve.configure(image=img_curve)
     lbl_img_curve.image = img_curve
 
+def show_colored_hist():
+    img_colored = img.colored_hist()
+    img_colored = ImageTk.PhotoImage(img_colored)
+    
+    lbl_colored_hist.configure(image=img_colored)
+    lbl_colored_hist.image = img_colored
+
 
 def realizar_estegnografia():
     global img_encrypted
@@ -254,6 +261,14 @@ root.title('GUI PDI')
 root.geometry('1300x950')
 root.configure()
 
+colored_hist = Toplevel(root)
+colored_hist.title("Colored Histogram")
+colored_hist.geometry('650x480')
+colored_hist.configure()
+
+lbl_colored_hist = Label(colored_hist)
+lbl_colored_hist.pack(side=TOP)
+
 frm_side = Frame(root)
 frm_side.pack(side=RIGHT, padx=15)
 
@@ -263,6 +278,9 @@ frm_filter.pack(side=BOTTOM, padx=15)
 lbl_img_curve = Label(
     frm_side, text='Insert Values on Points X & Y and Press "See Plot"')
 lbl_img_curve.pack(side=TOP)
+
+btn_col_plot = Button(frm_filter, text="See Colored Hist", command=show_colored_hist)
+btn_col_plot.pack(side=tk.BOTTOM)
 
 scl_saturation = Scale(frm_filter, from_=0, to=360, orient=HORIZONTAL, length=300)
 scl_saturation.set(0)
