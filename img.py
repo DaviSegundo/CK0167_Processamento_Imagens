@@ -7,7 +7,8 @@ from scipy.signal import convolve2d
 import functions as fc
 import cv2
 from math import ceil
-from skimage.color import rgb2hsv
+from skimage.color import rgb2hsv, hsv2rgb
+import colorsys
 
 
 class Img():
@@ -466,6 +467,29 @@ class Img():
         temp_img = converter.enhance(num)
         self.img_now = np.array(temp_img)
         return Image.fromarray(self.img_now)
+
+    def hue(self, hue=270):
+        temp_img = self.img_now
+        
+        image = Image.fromarray(temp_img)
+        img = image.convert('RGBA')
+        arr = np.array(np.asarray(img).astype('float'))
+        new_img = Image.fromarray(fc.shift_hue(arr, hue/360.).astype('uint8'), 'RGBA')
+
+        self.img_now = np.array((arr * 255)).astype(np.uint8)
+        return new_img
+
+    def saturation(self, saturation=270):
+        temp_img = self.img_now
+        
+        image = Image.fromarray(temp_img)
+        img = image.convert('RGBA')
+        arr = np.array(np.asarray(img).astype('float'))
+        new_img = Image.fromarray(fc.shift_hue(arr, saturation/360.).astype('uint8'), 'RGBA')
+
+        self.img_now = np.array((arr * 255)).astype(np.uint8)
+        return new_img
+        
 
     def img_to_array(self):
         img_byte_arr = io.BytesIO()

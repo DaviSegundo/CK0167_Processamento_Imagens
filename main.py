@@ -60,7 +60,8 @@ def apply():
     # pega os valores informados nos scalers
     brightness = scl_brigh.get()/100
     gama = scl_gama.get()/100
-    saturation = (scl_saturation.get()-300)/100
+    hue = scl_hue.get()
+    saturation = scl_saturation.get()
 
     # realiza as transformações nas imagens de acordo com os valores
     img_now = img.brightness_apply(brightness)
@@ -107,7 +108,12 @@ def apply():
         img_now = img.limiar()
     if check_hsv.get() == 1:
         img_now = img.to_hsv()
-    img_now = img.saturation(saturation)
+    if check_hue.get() == 1:
+        img_now = img.hue(hue=hue)
+    if check_sat.get() == 1:
+        img_now = img.saturation(saturation=saturation)
+    
+    # img_now = img.saturation(saturation)
 
     if len(input_x.get()) > 0 and check_lp.get() == 1:
         points_x = input_x.get()
@@ -258,11 +264,25 @@ lbl_img_curve = Label(
     frm_side, text='Insert Values on Points X & Y and Press "See Plot"')
 lbl_img_curve.pack(side=TOP)
 
-scl_saturation = Scale(frm_filter, from_=0, to=600, orient=HORIZONTAL, length=300)
-scl_saturation.set(300)
+scl_saturation = Scale(frm_filter, from_=0, to=360, orient=HORIZONTAL, length=300)
+scl_saturation.set(0)
 scl_saturation.pack(side=BOTTOM, padx=10)
-lbl_saturation = Label(frm_filter, text='Saturation')
+lbl_saturation = Label(frm_filter, text='Saturation Adjust')
 lbl_saturation.pack(side=BOTTOM)
+
+scl_hue = Scale(frm_filter, from_=0, to=360, orient=HORIZONTAL, length=300)
+scl_hue.set(0)
+scl_hue.pack(side=BOTTOM, padx=10)
+lbl_hue = Label(frm_filter, text='Hue Adjust')
+lbl_hue.pack(side=BOTTOM)
+
+check_sat = IntVar()
+box_sat = Checkbutton(frm_filter, text="Saturation Confirm", variable=check_sat)
+box_sat.pack(side=tk.BOTTOM)
+
+check_hue = IntVar()
+box_hue = Checkbutton(frm_filter, text="Hue Confirm", variable=check_hue)
+box_hue.pack(side=tk.BOTTOM)
 
 check_hsv = IntVar()
 box_hsv = Checkbutton(frm_filter, text="HSV", variable=check_hsv)
