@@ -122,6 +122,12 @@ def apply():
         img_now = img.col_laplacian_filter_apply()
     if check_generic.get() == 1:
         img_now = img.generic_filter(fc.matriz_convert(0,1,0,1,-4,1,0,1,0))
+    if check_resize.get() == 1:
+        img_now = img.resize_i()
+    if check_rotate.get() == 1:
+        img_now = img.rotate_i()
+    if check_serpia.get() == 1:
+        img_now = img.serpia()
     
     # img_now = img.saturation(saturation)
 
@@ -133,6 +139,8 @@ def apply():
         points_y = fc.transform_points(points_y)
 
         img_now = img.linear_parts_apply(points_x, points_y)
+
+    window.geometry(f'{img_now.size[0]}x{img_now.size[1]}')
 
     # atualiza a imagem na tela auxiliar
     img_s = ImageTk.PhotoImage(img_now)
@@ -268,15 +276,13 @@ def decodificar_estegnografia():
 # janela principal do programa
 root = Tk()
 root.title('GUI PDI')
-root.geometry('1300x950')
+root.geometry('1900x950')
 root.configure()
 
-colored_hist = Toplevel(root)
-colored_hist.title("Colored Histogram")
-colored_hist.geometry('650x480')
-colored_hist.configure()
+frm_side_side = Frame(root)
+frm_side_side.pack(side=RIGHT, padx=15)
 
-lbl_colored_hist = Label(colored_hist)
+lbl_colored_hist = Label(frm_side_side)
 lbl_colored_hist.pack(side=TOP)
 
 frm_side = Frame(root)
@@ -285,12 +291,23 @@ frm_side.pack(side=RIGHT, padx=15)
 frm_filter = Frame(frm_side)
 frm_filter.pack(side=BOTTOM, padx=15)
 
-lbl_img_curve = Label(
-    frm_side, text='Insert Values on Points X & Y and Press "See Plot"')
+lbl_img_curve = Label(frm_side_side)
 lbl_img_curve.pack(side=TOP)
 
 btn_col_plot = Button(frm_filter, text="See Colored Hist", command=show_colored_hist)
 btn_col_plot.pack(side=tk.BOTTOM)
+
+check_serpia = IntVar()
+box_serpia = Checkbutton(frm_filter, text="Serpia", variable=check_serpia)
+box_serpia.pack(side=tk.BOTTOM)
+
+check_rotate = IntVar()
+box_rotate = Checkbutton(frm_filter, text="Rotate", variable=check_rotate)
+box_rotate.pack(side=tk.BOTTOM)
+
+check_resize = IntVar()
+box_resize = Checkbutton(frm_filter, text="Resize", variable=check_resize)
+box_resize.pack(side=tk.BOTTOM)
 
 check_col_laplacian = IntVar()
 box_col_laplacian = Checkbutton(frm_filter, text="Laplacian Color", variable=check_col_laplacian)

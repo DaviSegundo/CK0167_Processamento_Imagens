@@ -326,12 +326,12 @@ class Img():
 
     def col_laplacian_filter_apply(self):
         laplacian = np.array([[0, 1, 0],
-                              [1, -2, 1],
+                              [1, -4, 1],
                               [0, 1, 0]])
         img_hsv = cv2.cvtColor(self.img_now, cv2.COLOR_RGB2HSV)
-        img_hsv[:,:,2] = convolve2d(img_hsv[:,:,2], laplacian, mode="same")
+        img_hsv[:,:,2] = (convolve2d(img_hsv[:,:,2], laplacian, mode="same"))*0.2
         img_rgb = cv2.cvtColor(img_hsv, cv2.COLOR_HSV2RGB)
-        self.img_now = (self.img_now + (0.2*img_rgb)).astype(np.uint8)
+        self.img_now = (((self.img_now/255) + (img_rgb/255)*0.5)*255).clip(0, 255).astype(np.uint8)
         return Image.fromarray(self.img_now)
 
     def high_boost_filter_apply(self):
@@ -503,6 +503,31 @@ class Img():
         plt.close()
         return Image.open(strfile)
 
+    def resize_i(self, fator=0.5):
+        w1 = self.img_now.shape[1]
+        h1 = self.img_now.shape[0]
+
+        w2 = np.floor(w1*fator).astype(np.int64)
+        h2 = np.floor(h1*fator).astype(np.int64)
+
+        # temp = np.empty((w2,h2))
+        # for i in range(h2):
+        #     for j in range(w2):
+        #         px = np.floor(j*fator).astype(np.int64)
+        #         py = np.floor(i*fator).astype(np.int64)
+        #         temp[i,j] = self.img_now[px,py]
+
+        img_new = Image.fromarray(self.img_now)
+        img_res = img_new.resize((w2, h2))
+        self.img_now = np.array(img_res)
+        return Image.fromarray(self.img_now)
+
+    def rotate_i(self, rot=90):
+        img_new = Image.fromarray(self.img_now)
+        img_rot = img_new.rotate(rot)
+        self.img_now = np.array(img_rot)
+        return Image.fromarray(self.img_now)
+
     def to_hsv(self):
         temp_img = self.img_now
         temp_img = temp_img/255
@@ -540,7 +565,16 @@ class Img():
 
         self.img_now = np.array((arr * 255)).astype(np.uint8)
         return new_img
-        
+
+    def serpia(self):
+        temp_img = self.img_now
+        temp_img = temp_img/255
+        sp = np.array([[0.393, 0.769, 0.189],
+                       [0.349, 0.686, 0.168],
+                       [0.272, 0.534, 0.131]]).T
+        temp_img = temp_img @ sp
+        self.img_now = (temp_img * 255).clip(0,255).astype(np.uint8)
+        return Image.fromarray(self.img_now)
 
     def img_to_array(self):
         img_byte_arr = io.BytesIO()
