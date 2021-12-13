@@ -6,6 +6,7 @@ from tkinter import filedialog
 from PIL import Image, ImageTk
 from img import Img
 import functions as fc
+from time import sleep
 
 """
 Função que seleciona a imagem que vai ser trabalhada.
@@ -43,7 +44,7 @@ def select_image():
     # criação de uma nova janela para mostrar a imagem
     window = Toplevel(root)
     window.title("Imagem")
-    window.geometry(f'{size[0]}x{size[1]}')
+    # window.geometry(f'{size[0]}x{size[1]}')
     window.configure()
     lbl_img = Label(window)
     lbl_img.pack()
@@ -64,6 +65,8 @@ def apply():
     saturation = scl_saturation.get()/100
 
     # realiza as transformações nas imagens de acordo com os valores
+    img.img_now = img.img_original
+
     img_now = img.brightness_apply(brightness)
     img_now = img.gama_apply(gama)
     
@@ -125,7 +128,7 @@ def apply():
     if check_resize.get() == 1:
         img_now = img.resize_i()
     if check_rotate.get() == 1:
-        img_now = img.rotate_i()
+        img_now = img.rotate_i(-90)
     if check_serpia.get() == 1:
         img_now = img.serpia()
     
@@ -140,7 +143,7 @@ def apply():
 
         img_now = img.linear_parts_apply(points_x, points_y)
 
-    window.geometry(f'{img_now.size[0]}x{img_now.size[1]}')
+    # window.geometry(f'{img_now.size[0]}x{img_now.size[1]}')
 
     # atualiza a imagem na tela auxiliar
     img_s = ImageTk.PhotoImage(img_now)

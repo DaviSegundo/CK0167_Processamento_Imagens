@@ -18,6 +18,7 @@ class Img():
         self.img = Image.open(path)
         self.img_uint8 = np.array(self.img)
         self.img_now = self.img_uint8
+        self.img_original = self.img_now
         self.return_img = None
 
     def size(self):
@@ -204,8 +205,8 @@ class Img():
         temp_img = temp_img/255
         temp_img = np.fft.fft2(temp_img)
         temp_img = np.fft.fftshift(temp_img)
-
-        self.return_img = (np.uint8(np.clip(np.real(temp_img) * 255, 0, 255)))
+        temp_img = fc.normalize_img(np.absolute(temp_img).clip(0,1000))
+        self.return_img = (np.uint8(np.clip(np.real(temp_img), 0, 255)))
         return (np.real(self.return_img))
 
     def high_fourier_test(self, array, radius=20):
@@ -404,8 +405,8 @@ class Img():
         temp_img = temp_img/255
         temp_img = np.fft.fft2(temp_img)
         temp_img = np.fft.fftshift(temp_img)
-
-        self.img_now = (np.uint8(np.clip(np.real(temp_img) * 255, 0, 255)))
+        temp_img = fc.normalize_img(np.absolute(temp_img).clip(0,1000))
+        self.img_now = (np.uint8(np.clip(np.real(temp_img), 0, 255)))
         return fc.from_array(np.real(temp_img))
 
     def high_fourier(self, radius=20):
