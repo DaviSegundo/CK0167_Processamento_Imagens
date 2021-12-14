@@ -110,7 +110,6 @@ class Img():
                     points_x, points_y, temp_img[i][j])
         temp_img = (temp_img * 255).astype(np.uint8)
         self.return_img = temp_img
-        print('linear test')
         return self.return_img
 
     def laplacian_filter_test(self, array):
@@ -122,16 +121,16 @@ class Img():
             shp = array.shape
             ipg = convolve2d(abs(temp_img), laplacian)
             ipg = ipg[0:shp[0], 0:shp[1]]
-            ib = temp_img - ipg
+            ib =  ipg
             ib = ib[0:shp[0], 0:shp[1]]
             self.return_img = fc.normalize_img(1.5*ib)
             return self.return_img
-        # else:
-        #     img_hsv = cv2.cvtColor(array, cv2.COLOR_RGB2HSV)
-        #     img_hsv[:,:,2] = (convolve2d(img_hsv[:,:,2], laplacian, mode="same"))*0.3
-        #     img_rgb = cv2.cvtColor(img_hsv, cv2.COLOR_HSV2RGB)
-        #     self.return_img = fc.normalize_img(((img_rgb)*0.3)/255)
-        #     return self.return_img
+        else:
+            img_hsv = cv2.cvtColor(array, cv2.COLOR_RGB2HSV)
+            img_hsv[:,:,2] = (convolve2d(img_hsv[:,:,2], laplacian, mode="same"))*0.3
+            img_rgb = cv2.cvtColor(img_hsv, cv2.COLOR_HSV2RGB)
+            self.return_img = fc.normalize_img(((img_rgb)*0.3)/255)
+            return self.return_img
 
     def high_boost_filter_test(self, array):
         gaussian = np.array([[1, 2, 1],
@@ -144,7 +143,7 @@ class Img():
             ipg = ipg[0:shp[0], 0:shp[1]]
             ib = temp_img - ipg
             ib = ib[0:shp[0], 0:shp[1]]
-            self.return_img = fc.normalize_img(1.5*ib)
+            self.return_img = fc.normalize_img(3*ib)
             return self.return_img
         else:
             img_hsv = cv2.cvtColor(array, cv2.COLOR_RGB2HSV)
@@ -175,19 +174,33 @@ class Img():
 
     def mean_simple_filter_test(self, array, size):
         kernel = fc.generate_mean_simple_kernel(size)
-        temp_img = array
-        temp_img = convolve2d(abs(temp_img), kernel, mode="same")
-        temp_img = fc.normalize_img(temp_img)
-        self.return_img = temp_img
-        return self.return_img
+        if len(array.shape) < 3:
+            temp_img = array
+            temp_img = convolve2d(abs(temp_img), kernel, mode="same")
+            temp_img = fc.normalize_img(temp_img)
+            self.return_img = temp_img
+            return self.return_img
+        else:
+            img_hsv = cv2.cvtColor(array, cv2.COLOR_RGB2HSV)
+            img_hsv[:,:,2] = convolve2d(img_hsv[:,:,2], kernel, mode="same")
+            img_rgb = cv2.cvtColor(img_hsv, cv2.COLOR_HSV2RGB)
+            self.return_img = img_rgb
+            return self.return_img
 
     def mean_weighted_filter_test(self, array, size):
         kernel = fc.generate_mean_weighted_kernel(size)
-        temp_img = array
-        temp_img = convolve2d(abs(temp_img), kernel, mode="same")
-        temp_img = fc.normalize_img(temp_img)
-        self.return_img = temp_img
-        return self.return_img
+        if len(array.shape) < 3:
+            temp_img = array
+            temp_img = convolve2d(abs(temp_img), kernel, mode="same")
+            temp_img = fc.normalize_img(temp_img)
+            self.return_img = temp_img
+            return self.return_img
+        else:
+            img_hsv = cv2.cvtColor(array, cv2.COLOR_RGB2HSV)
+            img_hsv[:,:,2] = convolve2d(img_hsv[:,:,2], kernel, mode="same")
+            img_rgb = cv2.cvtColor(img_hsv, cv2.COLOR_HSV2RGB)
+            self.return_img = img_rgb
+            return self.return_img
 
     def median_filter_test(self, array, size):
         temp_img = array
@@ -206,10 +219,8 @@ class Img():
         temp_img = array
         x = convolve2d(abs(temp_img), filter1)
         y = convolve2d(abs(temp_img), filter2)
-        temp_img = np.abs(x) + np.abs(y)
-        shp = self.img_now.shape
-        ip = temp_img[0:shp[0], 0:shp[1]]
-        self.return_img = ip
+        temp_img = (np.abs(x) + np.abs(y))
+        self.return_img = temp_img
         return self.return_img
 
     def generic_filter_test(self, array ,matrix):
@@ -219,9 +230,9 @@ class Img():
         self.return_img = temp_img
         return self.return_img
 
-    def limiar_test(self, array):
+    def limiar_test(self, array, num):
         temp_img = array
-        temp_img = temp_img >= 125
+        temp_img = temp_img >= num
         self.return_img = temp_img
         return self.return_img
 
@@ -706,7 +717,6 @@ class Img():
                 binary_char = character_list[current_char_count]
                 current_char_count += 1
                 # Step 5
-                print(binary_char)
                 for index_k, k in enumerate(binary_char):
                     if((k == '1' and img[i][width_parser][index_k % 3] % 2 == 0) or (k == '0' and img[i][width_parser][index_k % 3] % 2 == 1)):
                         img[i][width_parser][index_k % 3] -= 1
@@ -726,7 +736,6 @@ class Img():
         return img
 
     def decrypt(self, img):
-        print(img)
         character_list = []
         stop = False
         for index_i, i in enumerate(img):

@@ -187,11 +187,17 @@ def test(*args):
     gama = scl_gama.get()/100
     hue = scl_hue.get()
     saturation = scl_saturation.get()/100
+    limiar = scl_limiar.get()
+    res = scl_resize.get()/100
 
     # realiza as transformações nas imagens de acordo com os valores
     img_test = img.brightness_test(img.img_now, brightness)
     img_test = img.gama_test(img_test, gama)
 
+    if check_grayscale_mean.get() == 1:
+        img_test = img.gray_scale_mean_test(img_test)
+    if check_grayscale_avg.get() == 1:
+        img_test = img.gray_scale_avg_test(img_test)
     if check_neg.get() == 1:
         img_test = img.negative_image_test(img_test)
     if check_log.get() == 1:
@@ -218,7 +224,7 @@ def test(*args):
     if check_filter_edge.get() == 1:
         img_test = img.non_linear_test(img_test)
     if check_limiar.get() == 1:
-        img_test = img.limiar_test(img_test)
+        img_test = img.limiar_test(img_test, limiar)
     if check_fourier.get() == 1:
         img_test = img.fourier_test(img_test)
     if check_high_fourier.get() == 1:
@@ -311,20 +317,16 @@ lbl_img_curve = Label(frm_side_side)
 lbl_img_curve.pack(side=TOP)
 
 btn_col_plot = Button(frm_filter, text="See Colored Hist", command=show_colored_hist)
-btn_col_plot.pack(side=tk.BOTTOM)
+btn_col_plot.pack(side=tk.BOTTOM, pady=5)
 
 frm_chroma = Frame(frm_filter)
-frm_chroma.pack(side=BOTTOM)
+frm_chroma.pack(side=BOTTOM, pady=5)
 
 check_chroma = IntVar()
 box_chroma = Checkbutton(frm_chroma, text="Chroma Key", variable=check_chroma)#, command=test)
 box_chroma.pack(side=tk.RIGHT)
 btn_cho = Button(frm_chroma, text="Background Image", command=chroma_choice)
 btn_cho.pack(side=RIGHT)
-
-check_serpia = IntVar()
-box_serpia = Checkbutton(frm_filter, text="Serpia", variable=check_serpia, command=test)
-box_serpia.pack(side=tk.BOTTOM)
 
 frm_rotate = Frame(frm_filter)
 frm_rotate.pack(side=BOTTOM)
@@ -372,12 +374,16 @@ check_hue = IntVar()
 box_hue = Checkbutton(frm_filter, text="Hue Confirm", variable=check_hue)
 box_hue.pack(side=tk.BOTTOM)
 
+check_serpia = IntVar()
+box_serpia = Checkbutton(frm_filter, text="Serpia", variable=check_serpia, command=test)
+box_serpia.pack(side=tk.BOTTOM)
+
 check_grayscale_avg = IntVar()
-box_grayscale_avg = Checkbutton(frm_filter, text="Gray Scale AVG", variable=check_grayscale_avg)
+box_grayscale_avg = Checkbutton(frm_filter, text="Gray Scale AVG", variable=check_grayscale_avg, command=test)
 box_grayscale_avg.pack(side=tk.BOTTOM)
 
 check_grayscale_mean = IntVar()
-box_grayscale_mean = Checkbutton(frm_filter, text="Gray Scale Mean", variable=check_grayscale_mean)
+box_grayscale_mean = Checkbutton(frm_filter, text="Gray Scale Mean", variable=check_grayscale_mean, command=test)
 box_grayscale_mean.pack(side=tk.BOTTOM)
 
 lbl_saturation_hue = Label(frm_filter, text='Color Image')
@@ -391,11 +397,11 @@ box_fourier = Checkbutton(frm_fourier, text="Des Fourier", variable=check_fourie
 box_fourier.pack(side=tk.RIGHT)
 
 check_high_fourier = IntVar()
-box_high_fourier = Checkbutton(frm_fourier, text="High Fourier", variable=check_high_fourier, command=test)
+box_high_fourier = Checkbutton(frm_fourier, text="Low Fourier", variable=check_high_fourier, command=test)
 box_high_fourier.pack(side=tk.RIGHT)
 
 check_low_fourier = IntVar()
-box_low_fourier = Checkbutton(frm_fourier, text="Low Fourier", variable=check_low_fourier, command=test)
+box_low_fourier = Checkbutton(frm_fourier, text="High Fourier", variable=check_low_fourier, command=test)
 box_low_fourier.pack(side=tk.RIGHT)
 
 # Insert Radius value here
@@ -440,9 +446,17 @@ check_generic = IntVar()
 box_generic = Checkbutton(frm_filter, text="Generic", variable=check_generic, command=test)
 box_generic.pack(side=tk.BOTTOM)
 
+frm_limiar = Frame(frm_filter)
+frm_limiar.pack(side=BOTTOM)
+
 check_limiar = IntVar()
-box_limiar = Checkbutton(frm_filter, text="Limiar", variable=check_limiar, command=test)
-box_limiar.pack(side=tk.BOTTOM)
+box_limiar = Checkbutton(frm_limiar, text="Limiar", variable=check_limiar, command=test)
+box_limiar.pack(side=tk.RIGHT)
+scl_limiar = Scale(frm_limiar, from_=0, to=256, orient=HORIZONTAL, length=150, command=test)
+scl_limiar.set(125)
+scl_limiar.pack(side=RIGHT, padx=10)
+lbl_limiar = Label(frm_limiar, text="Value: ")
+lbl_limiar.pack(side=RIGHT)
 
 lbl_filter_info = Label(frm_filter, text="Filters")
 lbl_filter_info.pack(side=tk.TOP)
