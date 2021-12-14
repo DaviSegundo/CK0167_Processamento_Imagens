@@ -1,6 +1,7 @@
 from PIL import Image, ImageFilter, ImageEnhance
 import os
 import io
+from tkinter import filedialog
 import numpy as np
 import matplotlib.pyplot as plt
 from scipy.signal import convolve2d
@@ -116,23 +117,41 @@ class Img():
         laplacian = np.array([[0, 1, 0],
                               [1, -4, 1],
                               [0, 1, 0]])
-        temp_img = array
-        temp_img = convolve2d(abs(temp_img), laplacian)
-        temp_img = fc.normalize_img(temp_img)
-        self.return_img = temp_img
-        return self.return_img
+        if len(array.shape) < 3:
+            temp_img = array
+            shp = array.shape
+            ipg = convolve2d(abs(temp_img), laplacian)
+            ipg = ipg[0:shp[0], 0:shp[1]]
+            ib = temp_img - ipg
+            ib = ib[0:shp[0], 0:shp[1]]
+            self.return_img = fc.normalize_img(1.5*ib)
+            return self.return_img
+        # else:
+        #     img_hsv = cv2.cvtColor(array, cv2.COLOR_RGB2HSV)
+        #     img_hsv[:,:,2] = (convolve2d(img_hsv[:,:,2], laplacian, mode="same"))*0.3
+        #     img_rgb = cv2.cvtColor(img_hsv, cv2.COLOR_HSV2RGB)
+        #     self.return_img = fc.normalize_img(((img_rgb)*0.3)/255)
+        #     return self.return_img
 
     def high_boost_filter_test(self, array):
         gaussian = np.array([[1, 2, 1],
                              [2, -8, 2],
                              [1, 2, 1]])
-        temp_img = array
-        ipg = convolve2d(abs(temp_img), gaussian)
-        shp = temp_img.shape
-        ipg = ipg[0:shp[0], 0:shp[1]]
-        ib = temp_img - ipg
-        self.return_img = fc.normalize_img((ib*1.5))
-        return self.return_img
+        if len(array.shape) < 3:
+            temp_img = array
+            shp = array.shape
+            ipg = convolve2d(abs(temp_img), gaussian)
+            ipg = ipg[0:shp[0], 0:shp[1]]
+            ib = temp_img - ipg
+            ib = ib[0:shp[0], 0:shp[1]]
+            self.return_img = fc.normalize_img(1.5*ib)
+            return self.return_img
+        else:
+            img_hsv = cv2.cvtColor(array, cv2.COLOR_RGB2HSV)
+            img_hsv[:,:,2] = (convolve2d(img_hsv[:,:,2], gaussian, mode="same"))*0.3
+            img_rgb = cv2.cvtColor(img_hsv, cv2.COLOR_HSV2RGB)
+            self.return_img = fc.normalize_img(((img_rgb)*0.3)/255)
+            return self.return_img
 
     def sobel_x_filter_test(self, array):
         sobel_x = np.array([[-1, 0, 1],
@@ -157,7 +176,7 @@ class Img():
     def mean_simple_filter_test(self, array, size):
         kernel = fc.generate_mean_simple_kernel(size)
         temp_img = array
-        temp_img = convolve2d(abs(temp_img), kernel)
+        temp_img = convolve2d(abs(temp_img), kernel, mode="same")
         temp_img = fc.normalize_img(temp_img)
         self.return_img = temp_img
         return self.return_img
@@ -165,7 +184,7 @@ class Img():
     def mean_weighted_filter_test(self, array, size):
         kernel = fc.generate_mean_weighted_kernel(size)
         temp_img = array
-        temp_img = convolve2d(abs(temp_img), kernel)
+        temp_img = convolve2d(abs(temp_img), kernel, mode="same")
         temp_img = fc.normalize_img(temp_img)
         self.return_img = temp_img
         return self.return_img
@@ -193,10 +212,16 @@ class Img():
         self.return_img = ip
         return self.return_img
 
+    def generic_filter_test(self, array ,matrix):
+        generic = matrix
+        temp_img = array
+        temp_img = convolve2d(temp_img, generic, mode="same")
+        self.return_img = temp_img
+        return self.return_img
+
     def limiar_test(self, array):
         temp_img = array
-        temp_img = cv2.adaptiveThreshold(temp_img, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C, 
-                                         cv2.THRESH_BINARY, 199, 5)
+        temp_img = temp_img >= 125
         self.return_img = temp_img
         return self.return_img
 
@@ -239,8 +264,52 @@ class Img():
         self.return_img = (np.uint8(np.clip(np.real(temp_img) * 255, 0, 255)))
         return (np.real(self.return_img))
 
+    def gray_scale_mean_test(self, array):
+        temp_img = np.mean(array, axis=2)
+        self.return_img = temp_img
+        return self.return_img
+
+    def gray_scale_avg_test(self, array):
+        temp_img = np.average(array, weights=[0.299, 0.587, 0.114], axis=2)
+        self.return_img = temp_img
+        return self.return_img
+
+    def saturation_enc_test(self, array, num):
+        temp_img = array
+        
+        image = Image.fromarray(temp_img)
+        img = image.convert('RGB')
+        arr = np.array(np.asarray(img).astype('float'))
+        self.return_img = fc.shift_saturation(arr, num).astype('uint8')
+
+        # self.return_img = np.array((arr * 255)).astype(np.uint8)
+        return self.return_img
+
+    def hue_test(self, array, hue=270):
+        temp_img = array
+        image = Image.fromarray(temp_img)
+        img = image.convert('RGBA')
+        arr = np.array(np.asarray(img).astype('float'))
+        self.return_img = fc.shift_hue(arr, hue/360.).astype('uint8')
+
+        # self.img_now = np.array((arr * 255)).astype(np.uint8)
+        return self.return_img
+
+    def serpia_test(self, array):
+        temp_img = array
+        temp_img = temp_img/255
+        sp = np.array([[0.393, 0.769, 0.189],
+                       [0.349, 0.686, 0.168],
+                       [0.272, 0.534, 0.131]]).T
+        temp_img = temp_img @ sp
+        self.return_img = (temp_img * 255).clip(0,255).astype(np.uint8)
+        return self.return_img
+
     def convert(self, array):
-        return Image.fromarray(array)
+        try:
+            return Image.fromarray(array)
+        except:
+            return fc.from_array(array)
 
     # aplicação definitiva das informações alteradas
     def negative_image(self):
@@ -318,35 +387,39 @@ class Img():
         laplacian = np.array([[0, 1, 0],
                               [1, -4, 1],
                               [0, 1, 0]])
-        temp_img = self.img_now
-        temp_img = convolve2d(abs(temp_img), laplacian)
-        shp = self.img_now.shape
-        ip = temp_img[0:shp[0], 0:shp[1]]
-        self.img_now = self.img_now + (0.3*ip)
-        return Image.fromarray(self.img_now)
-
-    def col_laplacian_filter_apply(self):
-        laplacian = np.array([[0, 1, 0],
-                              [1, -4, 1],
-                              [0, 1, 0]])
-        img_hsv = cv2.cvtColor(self.img_now, cv2.COLOR_RGB2HSV)
-        img_hsv[:,:,2] = (convolve2d(img_hsv[:,:,2], laplacian, mode="same"))*0.2
-        img_rgb = cv2.cvtColor(img_hsv, cv2.COLOR_HSV2RGB)
-        self.img_now = (((self.img_now/255) + (img_rgb/255)*0.5)*255).clip(0, 255).astype(np.uint8)
-        return Image.fromarray(self.img_now)
+        if len(self.img_now.shape) < 3:
+            temp_img = self.img_now
+            temp_img = convolve2d(abs(temp_img), laplacian)
+            shp = self.img_now.shape
+            ip = temp_img[0:shp[0], 0:shp[1]]
+            self.img_now = self.img_now + (0.3*ip)
+            return Image.fromarray(self.img_now)
+        else:
+            img_hsv = cv2.cvtColor(self.img_now, cv2.COLOR_RGB2HSV)
+            img_hsv[:,:,2] = (convolve2d(img_hsv[:,:,2], laplacian, mode="same"))*0.05
+            img_rgb = cv2.cvtColor(img_hsv, cv2.COLOR_HSV2RGB)
+            self.img_now = (((self.img_now/255) + (img_rgb/255)*0.15)*255).clip(0, 255).astype(np.uint8)
+            return Image.fromarray(self.img_now)
 
     def high_boost_filter_apply(self):
         gaussian = np.array([[1, 2, 1],
                              [2, -8, 2],
                              [1, 2, 1]])
-        temp_img = self.img_now
-        shp = self.img_now.shape
-        ipg = convolve2d(abs(temp_img), gaussian)
-        ipg = ipg[0:shp[0], 0:shp[1]]
-        ib = temp_img - ipg
-        ib = ib[0:shp[0], 0:shp[1]]
-        self.img_now = self.img_now + (0.05*ib)
-        return Image.fromarray(self.img_now)
+        if len(self.img_now.shape) < 3:
+            temp_img = self.img_now
+            shp = self.img_now.shape
+            ipg = convolve2d(abs(temp_img), gaussian)
+            ipg = ipg[0:shp[0], 0:shp[1]]
+            ib = temp_img - ipg
+            ib = ib[0:shp[0], 0:shp[1]]
+            self.img_now = self.img_now + (0.05*ib)
+            return Image.fromarray(self.img_now)
+        else:
+            img_hsv = cv2.cvtColor(self.img_now, cv2.COLOR_RGB2HSV)
+            img_hsv[:,:,2] = (convolve2d(img_hsv[:,:,2], gaussian, mode="same"))*0.35
+            img_rgb = cv2.cvtColor(img_hsv, cv2.COLOR_HSV2RGB)
+            self.img_now = (((self.img_now/255) + (img_rgb/255)*0.1)*255).clip(0, 255).astype(np.uint8)
+            return Image.fromarray(self.img_now)
 
     def sobel_x_filter_apply(self):
         sobel_x = np.array([[-1, 0, 1],
@@ -395,8 +468,7 @@ class Img():
 
     def limiar(self):
         temp_img = self.img_now
-        temp_img = cv2.adaptiveThreshold(temp_img, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C, 
-                                         cv2.THRESH_BINARY, 199, 5)
+        temp_img = temp_img >= 125
         self.img_now = temp_img
         return Image.fromarray(self.img_now)
 
@@ -451,33 +523,31 @@ class Img():
 
     def mean_simple_filter_apply(self, size):
         kernel = fc.generate_mean_simple_kernel(size)
-        temp_img = self.img_now
-        temp_img = convolve2d(abs(temp_img), kernel)
-        self.img_now = temp_img
-        return Image.fromarray(self.img_now)
-
-    def col_mean_simple_filter_apply(self, size):
-        kernel = fc.generate_mean_simple_kernel(size)
-        img_hsv = cv2.cvtColor(self.img_now, cv2.COLOR_RGB2HSV)
-        img_hsv[:,:,2] = convolve2d(img_hsv[:,:,2], kernel, mode="same")
-        img_rgb = cv2.cvtColor(img_hsv, cv2.COLOR_HSV2RGB)
-        self.img_now = img_rgb
-        return Image.fromarray(self.img_now)
-
-    def col_mean_weighted_filter_apply(self, size):
-        kernel = fc.generate_mean_weighted_kernel(size)
-        img_hsv = cv2.cvtColor(self.img_now, cv2.COLOR_RGB2HSV)
-        img_hsv[:,:,2] = convolve2d(img_hsv[:,:,2], kernel, mode="same")
-        img_rgb = cv2.cvtColor(img_hsv, cv2.COLOR_HSV2RGB)
-        self.img_now = img_rgb
-        return Image.fromarray(self.img_now)
+        if len(self.img_now.shape) < 3:
+            temp_img = self.img_now
+            temp_img = convolve2d(abs(temp_img), kernel)
+            self.img_now = temp_img
+            return Image.fromarray(self.img_now)
+        else:
+            img_hsv = cv2.cvtColor(self.img_now, cv2.COLOR_RGB2HSV)
+            img_hsv[:,:,2] = convolve2d(img_hsv[:,:,2], kernel, mode="same")
+            img_rgb = cv2.cvtColor(img_hsv, cv2.COLOR_HSV2RGB)
+            self.img_now = img_rgb
+            return Image.fromarray(self.img_now)
 
     def mean_weighted_filter_apply(self, size):
         kernel = fc.generate_mean_weighted_kernel(size)
-        temp_img = self.img_now
-        temp_img = convolve2d(abs(temp_img), kernel)
-        self.img_now = temp_img
-        return Image.fromarray(self.img_now)
+        if len(self.img_now.shape) < 3:
+            temp_img = self.img_now
+            temp_img = convolve2d(abs(temp_img), kernel)
+            self.img_now = temp_img
+            return Image.fromarray(self.img_now)
+        else:
+            img_hsv = cv2.cvtColor(self.img_now, cv2.COLOR_RGB2HSV)
+            img_hsv[:,:,2] = convolve2d(img_hsv[:,:,2], kernel, mode="same")
+            img_rgb = cv2.cvtColor(img_hsv, cv2.COLOR_HSV2RGB)
+            self.img_now = img_rgb
+            return Image.fromarray(self.img_now)
 
     def median_filter_apply(self, size):
         temp_img = self.img_now
@@ -490,7 +560,7 @@ class Img():
         colors = ["red", "green", "blue"]
         channel_id = [0, 1, 2]
 
-        plt.xlim([0,256])
+        plt.xlim([-10,266])
         for id, col in zip(channel_id, colors):
             histogram, bin_edges = np.histogram(self.img_now[:, :, id], bins=256, range=(0, 256))
             plt.plot(bin_edges[0:-1], histogram, color=col)
@@ -505,27 +575,63 @@ class Img():
         return Image.open(strfile)
 
     def resize_i(self, fator=0.5):
-        w1 = self.img_now.shape[1]
-        h1 = self.img_now.shape[0]
+        w1 = self.img_now.shape[0]
+        h1 = self.img_now.shape[1]
 
-        w2 = np.floor(w1*fator).astype(np.int64)
-        h2 = np.floor(h1*fator).astype(np.int64)
+        w2 = int(np.floor(w1*fator))
+        h2 = int(np.floor(h1*fator))
 
-        # temp = np.empty((w2,h2))
-        # for i in range(h2):
-        #     for j in range(w2):
-        #         px = np.floor(j*fator).astype(np.int64)
-        #         py = np.floor(i*fator).astype(np.int64)
-        #         temp[i,j] = self.img_now[px,py]
+        if len(self.img_now.shape) < 3:
+            temp = np.empty((w2,h2))
+        else:
+            temp = np.empty((w2,h2,3))
+        for j in range(h2):
+            for i in range(w2):
+                px = min(int(np.floor(i/fator)), w1-1)
+                py = min(int(np.floor(j/fator)), h1-1)
+                temp[i,j] = self.img_now[px,py]
 
-        img_new = Image.fromarray(self.img_now)
-        img_res = img_new.resize((w2, h2))
-        self.img_now = np.array(img_res)
+        self.img_now = temp.astype(np.uint8)
+        
+        return Image.fromarray(self.img_now)
+
+    def resize_i_bi(self, fator=0.5):
+        w1 = self.img_now.shape[0]
+        h1 = self.img_now.shape[1]
+
+        w2 = int(np.floor(w1*fator))
+        h2 = int(np.floor(h1*fator))
+
+        if len(self.img_now.shape) < 3:
+            temp = np.empty((w2,h2))
+        else:
+            temp = np.empty((w2,h2,3))
+        for j in range(h2):
+            for i in range(w2):
+                scalerx = i/fator
+                scalery = j/fator
+                x = min(int(np.floor(i/fator)), w1-1)
+                y = min(int(np.floor(j/fator)), h1-1)
+                x2 = min(x+1, w1-1)
+                y2 = min(y+1, h1-1)
+                p1 = (x2-scalerx)*self.img_now[x,y]+(scalerx-x)*self.img_now[x2,y]
+                p2 = (x2-scalerx)*self.img_now[x,y2]+(scalerx-x)*self.img_now[x2,y2]
+                if x == x2:
+                    p1 = self.img_now[x,y]
+                    p2 = self.img_now[x2,y2]
+                if y == y2:
+                    p = self.img_now[x2,y2]
+                else:
+                    p = (y2-scalery)*p1+(scalery-y)*p2
+                temp[i,j] = p
+
+        self.img_now = temp.astype(np.uint8)
+        
         return Image.fromarray(self.img_now)
 
     def rotate_i(self, rot=90):
         img_new = Image.fromarray(self.img_now)
-        img_rot = img_new.rotate(rot)
+        img_rot = img_new.rotate(rot, expand=True)
         self.img_now = np.array(img_rot)
         return Image.fromarray(self.img_now)
 
@@ -536,14 +642,6 @@ class Img():
         self.img_now = temp_img
         self.img_now = (np.uint8(np.clip(np.real(temp_img) * 255, 0, 255)))
         return fc.from_array(self.img_now)
-
-    def saturation_enc(self, num):
-        temp_img = self.img_now
-        temp_img = Image.fromarray(temp_img)
-        converter = ImageEnhance.Color(temp_img)
-        temp_img = converter.enhance(num)
-        self.img_now = np.array(temp_img)
-        return Image.fromarray(self.img_now)
 
     def hue(self, hue=270):
         temp_img = self.img_now
@@ -556,13 +654,13 @@ class Img():
         self.img_now = np.array((arr * 255)).astype(np.uint8)
         return new_img
 
-    def saturation(self, saturation):
+    def saturation(self, saturation=0.65):
         temp_img = self.img_now
         
         image = Image.fromarray(temp_img)
-        img = image.convert('RGBA')
+        img = image.convert('RGB')
         arr = np.array(np.asarray(img).astype('float'))
-        new_img = Image.fromarray(fc.shift_hue(arr, saturation).astype('uint8'), 'RGBA')
+        new_img = Image.fromarray(fc.shift_saturation(arr, saturation).astype('uint8'), 'RGB')
 
         self.img_now = np.array((arr * 255)).astype(np.uint8)
         return new_img
@@ -624,10 +722,11 @@ class Img():
         # Step 6
         # Write the encrypted image into a new file
         cv2.imwrite("media/encrypted_image.png", img)
+
         return img
 
     def decrypt(self, img):
-
+        print(img)
         character_list = []
         stop = False
         for index_i, i in enumerate(img):
@@ -662,26 +761,51 @@ class Img():
 
         return decoded_text
 
+    def chroma_key(self, fln):
+        temp_img = self.img_now
+        mask = temp_img[:,:,1] <= 251
+        mask = np.repeat(mask[:,:,np.newaxis], 3, axis=2)
+        
+        temp_img = mask * temp_img 
+        
+        img_new = Image.open(fln)
+        img_new = img_new.resize((temp_img.shape[1], temp_img.shape[0]))
+        img_new = np.array(img_new).astype(np.uint8)
+
+        self.img_now = (temp_img + (1- mask) * img_new).astype(np.uint8)
+        return Image.fromarray(self.img_now)
+
 
 if __name__ == "__main__":
-    laplacian = np.array([[1, 1, 1], [1, -8.5, 1], [1, 1, 1]])
-    # h_sobel = np.array([[1, 2, 1], [0, 0, 0], [-1, -2, -1]])
-    # v_sobel = np.array([[1, 0, -1], [2, 0, -2], [1, 0, -1]])
-    from sklearn.preprocessing import normalize
-
     img = Image.open(
-        '../../Downloads/Imagens_PDI/DIP3E_Original_Images_CH03/Fig0354(a)(einstein_orig).tif')
+        '../../Downloads/pele_chroma.jpg')
     img.show()
 
     array = np.array(img)
-    print(array)
+    print(array.shape)
+    verde = array[:,:,1]
+    new_verde = np.empty((verde.shape[0], verde.shape[1]))
+    for i, row in enumerate(verde):
+        for j, element in enumerate(row):
+            if element > 250:
+                new_verde[i,j] = 0
+            else:
+                new_verde[i,j] = element
 
-    temp_img = convolve2d(array, laplacian)
-    print(temp_img)
+    array[:,:,1] = new_verde
+    # array[:,:,1] = array[:,:,1]/255
+    img_g = Image.fromarray(array)
+    img_g.show()
 
-    norm_img = np.interp(temp_img, (temp_img.min(), temp_img.max()), (0, 1))
-    print(norm_img)
+    # img_insert = Image.open('../../Downloads/image.jpeg')
+    # img_insert.show()
 
-    norm_img = norm_img*255
-    norm_img = Image.fromarray(norm_img)
-    norm_img.show()
+    # img_insert_array = np.array(img_insert)
+
+    # for i, row in enumerate(img_insert_array):
+    #     for j, element in enumerate(row):
+    #         if array[i,j] > 50:
+    #             img_insert_array[i,j] = array[i,j]
+
+    # to_show = Image.fromarray(img_insert_array)
+    # to_show.show()

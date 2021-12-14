@@ -20,13 +20,15 @@ def shift_hue(arr, hout):
     return arr
 
 def shift_saturation(arr, sout):
+    arr = arr/255
     rgb_to_hsv = np.vectorize(colorsys.rgb_to_hsv)
     hsv_to_rgb = np.vectorize(colorsys.hsv_to_rgb)
-    r, g, b, a = np.rollaxis(arr, axis=-1)
+    r, g, b = np.rollaxis(arr, axis=-1)
     h, s, v = rgb_to_hsv(r, g, b)
     s = s * sout
     r, g, b = hsv_to_rgb(h, s, v)
-    arr = np.dstack((r, g, b, a))
+    arr = np.dstack((r, g, b))
+    arr = (arr * 255).clip(0,255).astype(np.uint8)
     return arr
 
 def create_circular_mask(h, w, center=None, radius=None):

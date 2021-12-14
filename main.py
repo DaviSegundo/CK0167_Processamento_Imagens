@@ -25,7 +25,7 @@ def select_image():
 
     # sistema de navegação de arquivos
     fln = filedialog.askopenfilename(initialdir=os.getcwd(
-    ), title="Select Image File", filetypes=(("TIF files", "*.tif"), ("All Files", "*.*")))
+    ), title="Select Image File", filetypes=(("All Files", "*.*"), ("TIF files", "*.tif")))
     img = Img(fln)
     size = img.size()
     img_s = ImageTk.PhotoImage(Image.open(fln))
@@ -63,6 +63,7 @@ def apply():
     gama = scl_gama.get()/100
     hue = scl_hue.get()
     saturation = scl_saturation.get()/100
+    res = scl_resize.get()/100
 
     # realiza as transformações nas imagens de acordo com os valores
     img.img_now = img.img_original
@@ -70,6 +71,16 @@ def apply():
     img_now = img.brightness_apply(brightness)
     img_now = img.gama_apply(gama)
     
+    if check_chroma.get() == 1:
+        img_now = img.chroma_key(fln_cho)
+    if check_grayscale_mean.get() == 1:
+        img_now = img.gray_scale_mean()
+    if check_grayscale_avg.get() == 1:
+        img_now = img.gray_scale_avg()
+    if check_resize.get() == 1:
+        img_now = img.resize_i(fator=res)
+    if check_resize_b.get() == 1:
+        img_now = img.resize_i_bi(fator=res)
     if check_neg.get() == 1:
         img_now = img.negative_image()
     if check_log.get() == 1:
@@ -95,10 +106,6 @@ def apply():
         img_now = img.sobel_y_filter_apply()
     if check_filter_edge.get() == 1:
         img_now = img.non_linear()
-    if check_grayscale_mean.get() == 1:
-        img_now = img.gray_scale_mean()
-    if check_grayscale_avg.get() == 1:
-        img_now = img.gray_scale_avg()
     if check_high_fourier.get() == 1:
         radius = option_radius_size.get()
         img_now = img.high_fourier(radius=radius)
@@ -109,26 +116,15 @@ def apply():
         img_now = img.fourier()
     if check_limiar.get() == 1:
         img_now = img.limiar()
-    if check_hsv.get() == 1:
-        img_now = img.to_hsv()
     if check_hue.get() == 1:
         img_now = img.hue(hue=hue)
     if check_sat.get() == 1:
-        img_now = img.saturation_enc(saturation)
-    if check_col_mean.get() == 1:
-        size = option_kernel_size.get()
-        img_now = img.col_mean_simple_filter_apply(size)
-    if check_col_mean_w.get() == 1:
-        size = option_kernel_size.get()
-        img_now = img.col_mean_weighted_filter_apply(size)
-    if check_col_laplacian.get() == 1:
-        img_now = img.col_laplacian_filter_apply()
+        img_now = img.saturation(saturation)
     if check_generic.get() == 1:
         img_now = img.generic_filter(fc.matriz_convert(0,1,0,1,-4,1,0,1,0))
-    if check_resize.get() == 1:
-        img_now = img.resize_i()
     if check_rotate.get() == 1:
-        img_now = img.rotate_i(-90)
+        rot = option_rotate_size.get()
+        img_now = img.rotate_i(rot)
     if check_serpia.get() == 1:
         img_now = img.serpia()
     
@@ -156,27 +152,28 @@ def apply():
     lbl_hist.image = img_hist_plot
 
     # volta para configurações iniciais
-    scl_brigh.set(100)
-    scl_gama.set(100)
-    box_negative.deselect()
-    box_log.deselect()
-    box_equal_hits.deselect()
-    box_lp.deselect()
-    box_laplacian.deselect()
-    box_mean_simple.deselect()
-    box_mean_weighted.deselect()
-    box_median.deselect()
-    box_high_boost.deselect()
-    box_sobel_x.deselect()
-    box_sobel_y.deselect()
-    box_edge.deselect()
-    box_grayscale_mean.deselect()
-    box_grayscale_avg.deselect()
-    box_low_fourier.deselect()
-    box_high_fourier.deselect()
-    box_fourier.deselect()
-    box_limiar.deselect()
-    box_hsv.deselect()
+
+    # scl_brigh.set(100)
+    # scl_gama.set(100)
+    # box_negative.deselect()
+    # box_log.deselect()
+    # box_equal_hits.deselect()
+    # box_lp.deselect()
+    # box_laplacian.deselect()
+    # box_mean_simple.deselect()
+    # box_mean_weighted.deselect()
+    # box_median.deselect()
+    # box_high_boost.deselect()
+    # box_sobel_x.deselect()
+    # box_sobel_y.deselect()
+    # box_edge.deselect()
+    # box_grayscale_mean.deselect()
+    # box_grayscale_avg.deselect()
+    # box_low_fourier.deselect()
+    # box_high_fourier.deselect()
+    # box_fourier.deselect()
+    # box_limiar.deselect()
+    # box_hsv.deselect()
 
 
 """
@@ -188,10 +185,13 @@ def test(*args):
     # pega os valores informados nos scalers
     brightness = scl_brigh.get()/100
     gama = scl_gama.get()/100
+    hue = scl_hue.get()
+    saturation = scl_saturation.get()/100
 
     # realiza as transformações nas imagens de acordo com os valores
     img_test = img.brightness_test(img.img_now, brightness)
     img_test = img.gama_test(img_test, gama)
+
     if check_neg.get() == 1:
         img_test = img.negative_image_test(img_test)
     if check_log.get() == 1:
@@ -227,6 +227,14 @@ def test(*args):
     if check_low_fourier.get() == 1:
         radius = option_radius_size.get()
         img_test = img.low_fourier_test(img_test, radius=radius)
+    if check_generic.get() == 1:
+        img_test = img.generic_filter_test(img_test, fc.matriz_convert(0,1,0,1,-4,1,0,1,0))
+    if check_sat.get() == 1:
+        img_test = img.saturation_enc_test(img_test, saturation)
+    if check_hue.get() == 1:
+        img_test = img.hue_test(img_test, hue)
+    if check_serpia.get() == 1:
+        img_test = img.serpia_test(img_test)
 
     if len(input_x.get()) > 0 and check_lp.get() == 1:
         points_x = input_x.get()
@@ -265,6 +273,11 @@ def show_colored_hist():
     lbl_colored_hist.configure(image=img_colored)
     lbl_colored_hist.image = img_colored
 
+def chroma_choice():
+    global fln_cho
+    fln_cho = filedialog.askopenfilename(initialdir=os.getcwd(
+    ), title="Select Image File", filetypes=(("All Files", "*.*"), ("TIF files", "*.tif")))
+
 
 def realizar_estegnografia():
     global img_encrypted
@@ -279,7 +292,7 @@ def decodificar_estegnografia():
 # janela principal do programa
 root = Tk()
 root.title('GUI PDI')
-root.geometry('1900x950')
+root.geometry('1850x950')
 root.configure()
 
 frm_side_side = Frame(root)
@@ -300,53 +313,64 @@ lbl_img_curve.pack(side=TOP)
 btn_col_plot = Button(frm_filter, text="See Colored Hist", command=show_colored_hist)
 btn_col_plot.pack(side=tk.BOTTOM)
 
+frm_chroma = Frame(frm_filter)
+frm_chroma.pack(side=BOTTOM)
+
+check_chroma = IntVar()
+box_chroma = Checkbutton(frm_chroma, text="Chroma Key", variable=check_chroma)#, command=test)
+box_chroma.pack(side=tk.RIGHT)
+btn_cho = Button(frm_chroma, text="Background Image", command=chroma_choice)
+btn_cho.pack(side=RIGHT)
+
 check_serpia = IntVar()
-box_serpia = Checkbutton(frm_filter, text="Serpia", variable=check_serpia)
+box_serpia = Checkbutton(frm_filter, text="Serpia", variable=check_serpia, command=test)
 box_serpia.pack(side=tk.BOTTOM)
 
+frm_rotate = Frame(frm_filter)
+frm_rotate.pack(side=BOTTOM)
+
 check_rotate = IntVar()
-box_rotate = Checkbutton(frm_filter, text="Rotate", variable=check_rotate)
-box_rotate.pack(side=tk.BOTTOM)
+box_rotate = Checkbutton(frm_rotate, text="Rotate", variable=check_rotate)
+box_rotate.pack(side=tk.RIGHT)
 
+OPTIONS_ROT = [90,180,270]
+option_rotate_size = IntVar()
+option_rotate_size.set(OPTIONS_ROT[0])
+option_menu_radius = OptionMenu(
+    frm_rotate, option_rotate_size, *OPTIONS_ROT)
+option_menu_radius.pack(side=tk.RIGHT)
+
+lbl_rotate = Label(frm_rotate, text="Degree: ")
+lbl_rotate.pack(side=RIGHT)
+
+frm_resize = Frame(frm_filter)
+frm_resize.pack(side=BOTTOM)
+
+check_resize_b = IntVar()
+box_resize_b = Checkbutton(frm_resize, text="Resize BI", variable=check_resize_b)
+box_resize_b.pack(side=tk.RIGHT)
 check_resize = IntVar()
-box_resize = Checkbutton(frm_filter, text="Resize", variable=check_resize)
-box_resize.pack(side=tk.BOTTOM)
+box_resize = Checkbutton(frm_resize, text="Resize NN", variable=check_resize)
+box_resize.pack(side=tk.RIGHT)
+scl_resize = Scale(frm_resize, from_=1, to=200, orient=HORIZONTAL, length=100)
+scl_resize.set(100)
+scl_resize.pack(side=RIGHT, padx=10)
+lbl_resize = Label(frm_resize, text="Fator: ")
+lbl_resize.pack(side=RIGHT)
 
-check_col_laplacian = IntVar()
-box_col_laplacian = Checkbutton(frm_filter, text="Laplacian Color", variable=check_col_laplacian)
-box_col_laplacian.pack(side=tk.BOTTOM)
-
-check_col_mean = IntVar()
-box_col_mean = Checkbutton(frm_filter, text="Mean Simple Color", variable=check_col_mean)
-box_col_mean.pack(side=tk.BOTTOM)
-
-check_col_mean_w = IntVar()
-box_col_mean_w = Checkbutton(frm_filter, text="Mean Weighted Color", variable=check_col_mean_w)
-box_col_mean_w.pack(side=tk.BOTTOM)
-
-scl_saturation = Scale(frm_filter, from_=10, to=200, orient=HORIZONTAL, length=300)
+scl_saturation = Scale(frm_filter, from_=10, to=200, orient=HORIZONTAL, length=300, command=test)
 scl_saturation.set(0)
 scl_saturation.pack(side=BOTTOM, padx=10)
-lbl_saturation = Label(frm_filter, text='Saturation Adjust')
-lbl_saturation.pack(side=BOTTOM)
-
-scl_hue = Scale(frm_filter, from_=0, to=360, orient=HORIZONTAL, length=300)
-scl_hue.set(0)
-scl_hue.pack(side=BOTTOM, padx=10)
-lbl_hue = Label(frm_filter, text='Hue Adjust')
-lbl_hue.pack(side=BOTTOM)
-
 check_sat = IntVar()
 box_sat = Checkbutton(frm_filter, text="Saturation Confirm", variable=check_sat)
 box_sat.pack(side=tk.BOTTOM)
 
+scl_hue = Scale(frm_filter, from_=0, to=360, orient=HORIZONTAL, length=300, command=test)
+scl_hue.set(0)
+scl_hue.pack(side=BOTTOM, padx=10)
 check_hue = IntVar()
 box_hue = Checkbutton(frm_filter, text="Hue Confirm", variable=check_hue)
 box_hue.pack(side=tk.BOTTOM)
-
-check_hsv = IntVar()
-box_hsv = Checkbutton(frm_filter, text="HSV", variable=check_hsv)
-box_hsv.pack(side=tk.BOTTOM)
 
 check_grayscale_avg = IntVar()
 box_grayscale_avg = Checkbutton(frm_filter, text="Gray Scale AVG", variable=check_grayscale_avg)
@@ -413,12 +437,15 @@ box_high_boost = Checkbutton(
 box_high_boost.pack(side=tk.BOTTOM)
 
 check_generic = IntVar()
-box_generic = Checkbutton(frm_filter, text="Generic", variable=check_generic)#, command=test)
+box_generic = Checkbutton(frm_filter, text="Generic", variable=check_generic, command=test)
 box_generic.pack(side=tk.BOTTOM)
 
 check_limiar = IntVar()
 box_limiar = Checkbutton(frm_filter, text="Limiar", variable=check_limiar, command=test)
 box_limiar.pack(side=tk.BOTTOM)
+
+lbl_filter_info = Label(frm_filter, text="Filters")
+lbl_filter_info.pack(side=tk.TOP)
 
 lbl_kernel = Label(frm_filter, text="Kernel Size: ")
 lbl_kernel.pack(side=tk.LEFT)
