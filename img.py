@@ -1,7 +1,5 @@
-from PIL import Image, ImageFilter, ImageEnhance
-import os
+from PIL import Image, ImageFilter
 import io
-from tkinter import filedialog
 import numpy as np
 import matplotlib.pyplot as plt
 from scipy.signal import convolve2d
@@ -9,7 +7,6 @@ import functions as fc
 import cv2
 from math import ceil
 from skimage.color import rgb2hsv, hsv2rgb
-import colorsys
 
 
 class Img():
@@ -299,7 +296,7 @@ class Img():
     def hue_test(self, array, hue=270):
         temp_img = array
         image = Image.fromarray(temp_img)
-        img = image.convert('RGBA')
+        img = image.convert('RGB')
         arr = np.array(np.asarray(img).astype('float'))
         self.return_img = fc.shift_hue(arr, hue/360.).astype('uint8')
 
@@ -646,23 +643,15 @@ class Img():
         self.img_now = np.array(img_rot)
         return Image.fromarray(self.img_now)
 
-    def to_hsv(self):
-        temp_img = self.img_now
-        temp_img = temp_img/255
-        temp_img = rgb2hsv(temp_img)
-        self.img_now = temp_img
-        self.img_now = (np.uint8(np.clip(np.real(temp_img) * 255, 0, 255)))
-        return fc.from_array(self.img_now)
-
     def hue(self, hue=270):
         temp_img = self.img_now
         
         image = Image.fromarray(temp_img)
-        img = image.convert('RGBA')
+        img = image.convert('RGB')
         arr = np.array(np.asarray(img).astype('float'))
-        new_img = Image.fromarray(fc.shift_hue(arr, hue/360.).astype('uint8'), 'RGBA')
+        new_img = Image.fromarray(fc.shift_hue(arr, hue/360.).astype('uint8'), 'RGB')
 
-        self.img_now = np.array((arr * 255)).astype(np.uint8)
+        self.img_now = fc.shift_hue(arr, hue/360.).astype('uint8')
         return new_img
 
     def saturation(self, saturation=0.65):
@@ -673,7 +662,7 @@ class Img():
         arr = np.array(np.asarray(img).astype('float'))
         new_img = Image.fromarray(fc.shift_saturation(arr, saturation).astype('uint8'), 'RGB')
 
-        self.img_now = np.array((arr * 255)).astype(np.uint8)
+        self.img_now = fc.shift_hue(arr, saturation).astype('uint8')
         return new_img
 
     def serpia(self):
@@ -694,13 +683,16 @@ class Img():
 
     def encrypt(self, text):
 
-        img = cv2.cvtColor(np.asarray(self.img), cv2.COLOR_BGR2RGB)
+        img = self.img_original
+
+        if len(img.shape) < 3:
+            img = np.repeat(img[:,:,np.newaxis], 3, axis=2)
 
         character_list = []
 
         for i in text:
             character_list.append(format(ord(i), '08b'))
-
+        
         height, width, color = img.shape
 
         PixReq = len(character_list) * 3
@@ -729,46 +721,56 @@ class Img():
                             img[i][width_parser][2] -= 1
                         width_parser += 1
             width_parser = 0
+
+        
         # Step 6
         # Write the encrypted image into a new file
-        cv2.imwrite("media/encrypted_image.png", img)
+        if len(img.shape) < 3:
+            file = Image.fromarray(img)
+            file.save("./media/encrypted_image.tif")
+        else:
+            file = Image.fromarray(img)
+            file.save("./media/encrypted_image.png")
 
         return img
 
     def decrypt(self, img):
-        character_list = []
-        stop = False
-        for index_i, i in enumerate(img):
-            i.tolist()
-            for index_j, j in enumerate(i):
-                if((index_j) % 3 == 2):
-                    # first pixel
-                    character_list.append(bin(j[0])[-1])
-                    # second pixel
-                    character_list.append(bin(j[1])[-1])
-                    # third pixel
-                    if(bin(j[2])[-1] == '1'):
-                        stop = True
-                        break
-                else:
-                    # first pixel
-                    character_list.append(bin(j[0])[-1])
-                    # second pixel
-                    character_list.append(bin(j[1])[-1])
-                    # third pixel
-                    character_list.append(bin(j[2])[-1])
-            if(stop):
-                break
+        try:
+            character_list = []
+            stop = False
+            for index_i, i in enumerate(img):
+                i.tolist()
+                for index_j, j in enumerate(i):
+                    if((index_j) % 3 == 2):
+                        # first pixel
+                        character_list.append(bin(j[0])[-1])
+                        # second pixel
+                        character_list.append(bin(j[1])[-1])
+                        # third pixel
+                        if(bin(j[2])[-1] == '1'):
+                            stop = True
+                            break
+                    else:
+                        # first pixel
+                        character_list.append(bin(j[0])[-1])
+                        # second pixel
+                        character_list.append(bin(j[1])[-1])
+                        # third pixel
+                        character_list.append(bin(j[2])[-1])
+                if(stop):
+                    break
 
-        decoded_text = []
-        # join all the bits to form letters (ASCII Representation)
-        for i in range(int((len(character_list)+1)/8)):
-            decoded_text.append(character_list[i*8:(i*8+8)])
-        # join all the letters to form the decoded_text.
-        decoded_text = [chr(int(''.join(i), 2)) for i in decoded_text]
-        decoded_text = ''.join(decoded_text)
+            decoded_text = []
+            # join all the bits to form letters (ASCII Representation)
+            for i in range(int((len(character_list)+1)/8)):
+                decoded_text.append(character_list[i*8:(i*8+8)])
+            # join all the letters to form the decoded_text.
+            decoded_text = [chr(int(''.join(i), 2)) for i in decoded_text]
+            decoded_text = ''.join(decoded_text)
 
-        return decoded_text
+            return decoded_text
+        except:
+            return "Sem dados salvos"
 
     def chroma_key(self, fln):
         temp_img = self.img_now
