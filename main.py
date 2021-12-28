@@ -22,6 +22,7 @@ def select_image():
     global lbl_img
     global lbl_hist
     global curve
+    global img_encrypted
 
     # sistema de navegação de arquivos
     fln = filedialog.askopenfilename(initialdir=os.getcwd(
@@ -121,7 +122,7 @@ def apply():
     if check_sat.get() == 1:
         img_now = img.saturation(saturation)
     if check_generic.get() == 1:
-        img_now = img.generic_filter(fc.matriz_convert(0,1,0,1,-4,1,0,1,0))
+        img_now = img.generic_filter(fc.matriz_convert(-1,-1,-1,0,0,0,1,1,1))
     if check_rotate.get() == 1:
         rot = option_rotate_size.get()
         img_now = img.rotate_i(rot)
@@ -284,15 +285,17 @@ def chroma_choice():
     fln_cho = filedialog.askopenfilename(initialdir=os.getcwd(
     ), title="Select Image File", filetypes=(("All Files", "*.*"), ("TIF files", "*.tif")))
 
+def save():
+    imga = Image.fromarray(img.img_now)
+    imga.save("./media/saved_file.png")
 
 def realizar_estegnografia():
-    global img_encrypted
     img_encrypted = img.encrypt(entry_esteg.get())
 
 
 def decodificar_estegnografia():
     frase_entrada.configure(
-        text=f'O texto decodificado é: {img.decrypt(img_encrypted)}')
+        text=f'O texto decodificado é: {img.decrypt(img.img_original)}')
 
 
 # janela principal do programa
@@ -506,6 +509,8 @@ frm2 = Frame(root)
 frm2.pack(side=BOTTOM, padx=15, pady=10)
 btn_apply = Button(frm2, text="Apply", command=apply)
 btn_apply.pack(side=tk.LEFT, padx=10)
+btn_save = Button(frm2, text="Save", command=save)
+btn_save.pack(side=tk.LEFT, padx=10)
 
 # scaler de brightness
 frm3 = Frame(root)

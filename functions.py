@@ -12,11 +12,11 @@ def matriz_convert(n1: int, n2: int, n3: int, n4: int, n5: int, n6: int, n7: int
 def shift_hue(arr, hout):
     rgb_to_hsv = np.vectorize(colorsys.rgb_to_hsv)
     hsv_to_rgb = np.vectorize(colorsys.hsv_to_rgb)
-    r, g, b, a = np.rollaxis(arr, axis=-1)
+    r, g, b = np.rollaxis(arr, axis=-1)
     h, s, v = rgb_to_hsv(r, g, b)
     h = h + hout
     r, g, b = hsv_to_rgb(h, s, v)
-    arr = np.dstack((r, g, b, a))
+    arr = np.dstack((r, g, b))
     return arr
 
 def shift_saturation(arr, sout):
